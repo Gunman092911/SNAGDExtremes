@@ -1,0 +1,21 @@
+.submission-page { display:block; overflow-y:auto; padding:3rem 1.5rem; box-sizing:border-box; }
+.submission-panel { width:min(100%,42rem); margin:0 auto; display:flex; flex-direction:column; gap:1.25rem; }
+.submission-intro,.submission-footnote { opacity:.8; }
+.submission-form { display:flex; flex-direction:column; gap:1.1rem; }
+.submission-form label { display:flex; flex-direction:column; gap:.5rem; }
+.submission-form input,.submission-form select,.submission-form textarea { box-sizing:border-box; width:100%; padding:.85rem 1rem; border:1px solid #8888; border-radius:.5rem; background:var(--color-background); color:var(--color-on-background); font:inherit; }
+.submission-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+.submission-error,.submission-success { padding:.8rem 1rem; border-radius:.5rem; }
+.submission-error { background:#de0000; color:white; }
+.submission-success { background:#16834a; color:white; }
+.submission-footnote { font-size:.9rem; }
+.admin-panel { width:min(100%,55rem); }
+.admin-toolbar,.submission-actions { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; }
+.admin-toolbar { justify-content:space-between; }
+.btn-secondary { background:#555; }
+.btn-danger { background:#b3261e; }
+.submission-card { display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:1.25rem; border:1px solid #8885; border-radius:.75rem; }
+.submission-card h3 { margin:0 0 .5rem; }
+.submission-card p { margin:.25rem 0; overflow-wrap:anywhere; }
+.submission-card a { color:var(--color-primary); text-decoration:underline; }
+@media(max-width:700px) { .submission-row { grid-template-columns:1fr; } .submission-card { align-items:flex-start; flex-direction:column; } }
