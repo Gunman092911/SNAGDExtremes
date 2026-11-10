@@ -1,3 +1,5 @@
+import { supabase } from './supabase.js';
+
 import { round, score } from './score.js';
 
 /**
@@ -9,7 +11,7 @@ export async function fetchList() {
     const listResult = await fetch(`${dir}/_list.json`);
     try {
         const list = await listResult.json();
-        return await Promise.all(
+        const levels = await Promise.all(
             list.map(async (path, rank) => {
                 const levelResult = await fetch(`${dir}/${path}.json`);
                 try {
@@ -18,9 +20,7 @@ export async function fetchList() {
                         {
                             ...level,
                             path,
-                            records: level.records.sort(
-                                (a, b) => b.percent - a.percent,
-                            ),
+                            records: [...(level.records || [])],
                         },
                         null,
                     ];
@@ -30,6 +30,40 @@ export async function fetchList() {
                 }
             }),
         );
+
+        // Approved community submissions are added to the public list.
+        try {
+            const { data, error } = await supabase
+                .from('snagd_submissions')
+                .select('level_key, username, proof_url, percent, hz')
+                .eq('status', 'approved');
+            if (error) throw error;
+            for (const submission of data || []) {
+                const entry = levels.find(([level]) => level?.path === submission.level_key);
+                if (!entry) continue;
+                const records = entry[0].records;
+                const duplicate = records.some(record =>
+                    record.user?.toLowerCase() === submission.username.toLowerCase() &&
+                    Number(record.percent) === Number(submission.percent) &&
+                    record.link === submission.proof_url
+                );
+                if (!duplicate) {
+                    records.push({
+                        user: submission.username,
+                        link: submission.proof_url,
+                        percent: Number(submission.percent),
+                        hz: Number(submission.hz),
+                    });
+                }
+            }
+        } catch (error) {
+            console.warn('Could not load approved community submissions:', error.message);
+        }
+
+        for (const [level] of levels) {
+            if (level) level.records.sort((a, b) => Number(b.percent) - Number(a.percent));
+        }
+        return levels;
     } catch {
         console.error(`Failed to load list.`);
         return null;

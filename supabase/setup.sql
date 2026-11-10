@@ -1,0 +1,20 @@
+-- Run this script in Supabase Dashboard > SQL Editor.
+create table if not exists public.snagd_staff (user_id uuid primary key references auth.users(id) on delete cascade, created_at timestamptz not null default now());
+create table if not exists public.snagd_submissions (id bigint generated always as identity primary key, username text not null check (char_length(username) between 1 and 32), level_key text not null, level_name text not null, percent integer not null check (percent between 1 and 100), hz integer not null check (hz between 1 and 10000), proof_url text not null check (proof_url ~* '^https?://'), notes text check (notes is null or char_length(notes) <= 1000), status text not null default 'pending' check (status in ('pending','approved','rejected')), created_at timestamptz not null default now(), reviewed_at timestamptz);
+alter table public.snagd_staff enable row level security;
+alter table public.snagd_submissions enable row level security;
+grant select on public.snagd_staff to authenticated;
+grant insert on public.snagd_submissions to anon, authenticated;
+grant select on public.snagd_submissions to anon, authenticated;
+revoke update, delete on public.snagd_submissions from anon, authenticated;
+grant update (status, reviewed_at) on public.snagd_submissions to authenticated;
+drop policy if exists staff_read_own_row on public.snagd_staff;
+create policy staff_read_own_row on public.snagd_staff for select to authenticated using (user_id = (select auth.uid()));
+drop policy if exists anyone_submit_pending on public.snagd_submissions;
+create policy anyone_submit_pending on public.snagd_submissions for insert to anon, authenticated with check (status = 'pending' and reviewed_at is null);
+drop policy if exists public_read_approved on public.snagd_submissions;
+create policy public_read_approved on public.snagd_submissions for select to anon, authenticated using (status = 'approved');
+drop policy if exists staff_read_all on public.snagd_submissions;
+create policy staff_read_all on public.snagd_submissions for select to authenticated using (exists (select 1 from public.snagd_staff where user_id = (select auth.uid())));
+drop policy if exists staff_review on public.snagd_submissions;
+create policy staff_review on public.snagd_submissions for update to authenticated using (exists (select 1 from public.snagd_staff where user_id = (select auth.uid()))) with check (exists (select 1 from public.snagd_staff where user_id = (select auth.uid())));
