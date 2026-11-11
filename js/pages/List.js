@@ -42,7 +42,7 @@ export default {
                 <div class="level-background-image" aria-hidden="true"></div>
                 <div class="level" v-if="level">
                     <h1>{{ level.name }}</h1>
-                    <div v-if="level.aredlRank" class="level-difficulty-badges">
+                    <div v-if="level.aredlRank" class="aredl-placement-badges">
                         <span class="aredl-rank-badge">AREDL #{{ level.aredlRank }}</span>
                     </div>
                     <LevelAuthors :author="level.author" :creators="level.creators" :verifier="level.verifier" :publisher="level.publisher"></LevelAuthors>
