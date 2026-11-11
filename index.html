@@ -36,7 +36,7 @@
         <script type="module" src="./js/main.js"></script>
     </head>
     <body id="app">
-        <header :class="{ dark: store.dark }">
+        <header :class="{ dark: store.dark }" :style="store.themeStyle">
             <div class="logo">
                 <h2>SNAGDE</h2>
                 <p>v1.0.0</p>
@@ -58,22 +58,45 @@
                     <span class="type-label-lg">Admin</span>
                 </router-link>
                 <div class="nav__actions">
-                    <button
-                        class="nav__icon"
-                        @click.prevent="store.toggleDark()"
-                    >
-                        <img
-                            :src="store.dark ? './assets/light.svg' : './assets/dark.svg'"
-                            alt=""
-                        />
+                    <button class="theme-trigger" type="button" @click.prevent="store.openThemes()" aria-label="Open theme customizer" title="Customize theme">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18h1.2a2.3 2.3 0 0 0 1.7-3.8 1.6 1.6 0 0 1 1.2-2.7H18a3 3 0 0 0 3-3c0-4.7-4-8.5-9-8.5Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="7.5" cy="10" r="1" fill="currentColor"/><circle cx="10" cy="6.8" r="1" fill="currentColor"/><circle cx="15" cy="7.5" r="1" fill="currentColor"/><circle cx="17.5" cy="11" r="1" fill="currentColor"/></svg>
                     </button>
-                    <!-- Replace the '#' with your discord server's invite-->
-                    <a class="nav__icon" href="#">
-                        <img src="./assets/discord.svg" alt="Discord Logo" />
-                    </a>
+                    <button class="nav__icon" @click.prevent="store.toggleDark()">
+                        <img :src="store.dark ? './assets/light.svg' : './assets/dark.svg'" alt="Toggle dark mode" />
+                    </button>
+                    <a class="nav__icon" href="#"><img src="./assets/discord.svg" alt="Discord Logo" /></a>
                 </div>
             </nav>
         </header>
+
+        <div v-if="store.themeOpen" class="theme-backdrop" @click.self="store.themeOpen = false">
+            <section class="theme-panel" :style="store.themeStyle" role="dialog" aria-modal="true" aria-label="Theme customizer">
+                <div class="theme-panel__heading">
+                    <div><span class="theme-eyebrow">MAKE IT YOURS</span><h2>Theme Studio</h2><p>Pick a Geometry Dash inspired look or build your own.</p></div>
+                    <button class="theme-close" @click="store.themeOpen = false" aria-label="Close">×</button>
+                </div>
+                <h3>Geometry Dash themes</h3>
+                <div class="theme-presets">
+                    <button v-for="(preset, key) in store.themes" :key="key" class="theme-preset" :class="{ selected: store.theme.name === preset.name }" @click="store.useTheme(key)">
+                        <span class="theme-swatch" :style="{ background: preset.primary }"></span><span>{{ preset.name }}</span><span v-if="store.theme.name === preset.name" class="theme-check">✓</span>
+                    </button>
+                </div>
+                <div class="theme-custom">
+                    <h3>Create your own theme</h3>
+                    <label class="theme-name-label">Theme name<input v-model="store.themeName" maxlength="24" placeholder="My awesome theme"></label>
+                    <div class="theme-color-grid">
+                        <label>Accent<input type="color" v-model="store.themeDraft.primary"></label>
+                        <label>Background<input type="color" v-model="store.themeDraft.background"></label>
+                        <label>Panels<input type="color" v-model="store.themeDraft.panel"></label>
+                        <label>Text<input type="color" v-model="store.themeDraft.text"></label>
+                        <label>Header<input type="color" v-model="store.themeDraft.header"></label>
+                    </div>
+                    <div class="theme-preview" :style="{ background: store.themeDraft.background, color: store.themeDraft.text, borderColor: store.themeDraft.primary }"><span :style="{ background: store.themeDraft.primary }"></span><strong>{{ store.themeName || 'Your theme' }}</strong><small>Live preview</small></div>
+                    <button class="theme-save" @click="store.saveCustomTheme()">Save & apply custom theme</button>
+                </div>
+                <button class="theme-reset" @click="store.resetTheme()">Reset to SNAGD Classic</button>
+            </section>
+        </div>
         <router-view v-slot="{ Component }">
             <transition name="tab-fade" mode="out-in">
                 <component
