@@ -136,3 +136,62 @@ input[type="checkbox"] {
         transition: none;
     }
 }
+
+
+/* Keep unlisted-level request details tidy and easy to scan in the staff dashboard. */
+.level-request-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.level-request-details {
+    min-width: 0;
+    flex: 1 1 18rem;
+}
+
+.level-request-details h3 {
+    margin: 0 0 0.65rem;
+}
+
+.level-request-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem 1.25rem;
+    margin-bottom: 0.65rem;
+    font-size: 0.9rem;
+}
+
+.level-request-meta span {
+    overflow-wrap: anywhere;
+}
+
+.level-request-video {
+    display: inline-block;
+    margin-bottom: 0.5rem;
+}
+
+.level-request-date {
+    display: block;
+    opacity: 0.7;
+    font-size: 0.8rem;
+}
+
+.level-request-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+@media (max-width: 600px) {
+    .level-request-card {
+        align-items: stretch;
+        gap: 0.85rem;
+    }
+
+    .level-request-actions .btn {
+        flex: 1;
+    }
+}
