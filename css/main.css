@@ -645,3 +645,74 @@ header .logo {
 header > .theme-trigger {
     z-index: 8;
 }
+
+/* Modern, low-profile scrollbars throughout the site. */
+:root {
+    scrollbar-color: rgba(104, 85, 217, .48) transparent;
+    scrollbar-width: thin;
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(104, 85, 217, .48) transparent;
+}
+
+*::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: rgba(104, 85, 217, .34);
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+    transition: background-color 160ms ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: rgba(104, 85, 217, .68);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+main.dark,
+header.dark,
+.theme-panel {
+    scrollbar-color: rgba(160, 148, 255, .5) transparent;
+}
+
+main.dark *,
+header.dark *,
+.theme-panel * {
+    scrollbar-color: rgba(160, 148, 255, .5) transparent;
+}
+
+main.dark *::-webkit-scrollbar-thumb,
+.theme-panel *::-webkit-scrollbar-thumb {
+    background: rgba(160, 148, 255, .36);
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+}
+
+main.dark *::-webkit-scrollbar-thumb:hover,
+.theme-panel *::-webkit-scrollbar-thumb:hover {
+    background: rgba(160, 148, 255, .72);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *::-webkit-scrollbar-thumb {
+        transition: none;
+    }
+}
