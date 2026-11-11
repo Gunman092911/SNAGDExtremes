@@ -549,3 +549,99 @@ header > .theme-trigger:focus-visible {
 @media (prefers-reduced-motion: reduce) {
     .theme-mode-button { transition: none; }
 }
+
+
+/* Center the SNAGD title and navigation, with Discord anchored at the far right. */
+header {
+    display: block;
+    height: 6.1rem;
+    min-height: 6.1rem;
+    box-sizing: border-box;
+    padding: 0;
+}
+header .logo {
+    position: absolute;
+    left: 50%;
+    top: .45rem;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: .55rem;
+    margin: 0;
+    white-space: nowrap;
+}
+header .nav {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: max-content;
+    max-width: calc(100% - 10rem);
+    height: 2.75rem;
+    flex: none;
+    gap: .45rem;
+}
+header .nav .nav__tab {
+    justify-content: center;
+}
+header .nav .nav__actions {
+    position: absolute;
+    left: calc(100% + 1.5rem);
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+header .nav .nav__actions .nav__icon {
+    margin: 0;
+}
+header > .theme-trigger {
+    top: 50%;
+}
+@media (max-width: 900px) {
+    header .nav {
+        max-width: calc(100% - 8rem);
+        gap: .1rem;
+    }
+    header .nav .nav__tab {
+        padding-inline: .45rem;
+        font-size: .78rem;
+    }
+    header .nav .nav__actions {
+        left: calc(100% + .35rem);
+    }
+}
+
+
+/* Keep the centered navigation above decorative header elements and clickable. */
+header .nav {
+    z-index: 5;
+    pointer-events: auto;
+}
+header .nav .nav__tab {
+    position: relative;
+    z-index: 6;
+    display: flex;
+    align-items: center;
+    min-height: 2.75rem;
+    pointer-events: auto;
+    cursor: pointer;
+}
+header .nav .nav__actions {
+    z-index: 7;
+    pointer-events: auto;
+}
+header .nav .nav__actions a {
+    pointer-events: auto;
+}
+header .logo {
+    pointer-events: none;
+}
+header > .theme-trigger {
+    z-index: 8;
+}
