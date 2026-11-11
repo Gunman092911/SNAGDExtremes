@@ -16,19 +16,6 @@ export default {
                             <option v-for="level in levels" :key="level.key" :value="level.key">{{ level.name }}</option>
                         </select>
                     </label>
-                    <p class="submission-intro">Verified a level not on the list? <button class="btn btn-secondary" type="button" @click="showLevelRequest = !showLevelRequest">Request a Level</button></p>
-                    <section v-if="showLevelRequest" class="admin-section">
-                        <h2>Request an Unlisted Level</h2>
-                        <p class="submission-intro">Send the level details to staff. If approved, it will be added to the record submission dropdown.</p>
-                        <form @submit.prevent="requestLevel" class="submission-form">
-                            <label>Level Name<input v-model.trim="levelRequest.name" required maxlength="100"></label>
-                            <label>Geometry Dash Level ID<input v-model.trim="levelRequest.id" type="number" min="1" required></label>
-                            <label>Verifier Username<input v-model.trim="levelRequest.verifier" required maxlength="50"></label>
-                            <label>Verification Video URL<input v-model.trim="levelRequest.verification" type="url" required></label>
-                            <label>AREDL Rank (optional)<input v-model.number="levelRequest.aredlRank" type="number" min="1"></label>
-                            <button class="btn" type="submit" :disabled="requestSending">{{ requestSending ? 'Sending...' : 'Send Level Request' }}</button>
-                        </form>
-                    </section>
                     <div class="submission-row">
                         <label>Progress (%)
                             <input v-model.number="form.percent" type="number" min="1" max="100" step="1" required>
@@ -52,6 +39,23 @@ export default {
                     <button class="btn" type="submit" :disabled="sending || !levels.length">{{ sending ? 'Submitting...' : 'Submit Record' }}</button>
                 </form>
                 <p class="submission-footnote">By submitting, you confirm that your record follows the list's submission requirements.</p>
+
+                <section class="admin-section" style="max-width: 520px; margin: 22px auto 0; padding: 14px 18px;">
+                    <p style="margin: 0; font-size: 0.9rem;">Verified a level not on the list?</p>
+                    <button class="btn btn-secondary" style="margin-top: 8px; padding: 7px 12px; font-size: 0.85rem;" type="button" @click="showLevelRequest = !showLevelRequest">Request a Level</button>
+                    <div v-if="showLevelRequest" style="margin-top: 14px;">
+                        <h2>Request an Unlisted Level</h2>
+                        <p class="submission-intro">Send the level details to staff. If approved, it will be added to the record submission dropdown.</p>
+                        <div class="submission-form">
+                            <label>Level Name<input v-model.trim="levelRequest.name" required maxlength="100"></label>
+                            <label>Geometry Dash Level ID<input v-model.trim="levelRequest.id" type="number" min="1" required></label>
+                            <label>Verifier Username<input v-model.trim="levelRequest.verifier" required maxlength="50"></label>
+                            <label>Verification Video URL<input v-model.trim="levelRequest.verification" type="url" required></label>
+                            <label>AREDL Rank (optional)<input v-model.number="levelRequest.aredlRank" type="number" min="1"></label>
+                            <button class="btn" type="button" @click="requestLevel" :disabled="requestSending">{{ requestSending ? 'Sending...' : 'Send Level Request' }}</button>
+                        </div>
+                    </div>
+                </section>
             </section>
         </main>
     `,
@@ -99,6 +103,9 @@ export default {
         async requestLevel() {
             this.error = ''; this.success = '';
             const id = Number(this.levelRequest.id);
+            if (!this.levelRequest.name.trim() || !this.levelRequest.verifier.trim() || !this.levelRequest.verification.trim()) {
+                this.error = 'Please complete all required level request fields.'; return;
+            }
             if (!Number.isSafeInteger(id) || id <= 0) { this.error = 'Enter a valid Geometry Dash level ID.'; return; }
             if (this.levelRequest.aredlRank !== null && (!Number.isInteger(this.levelRequest.aredlRank) || this.levelRequest.aredlRank < 1)) { this.error = 'AREDL rank must be a positive whole number.'; return; }
             this.requestSending = true;
