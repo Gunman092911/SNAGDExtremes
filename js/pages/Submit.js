@@ -40,11 +40,11 @@ export default {
                 </form>
                 <p class="submission-footnote">By submitting, you confirm that your record follows the list's submission requirements.</p>
 
-                <section class="admin-section" style="max-width: 520px; margin: 22px auto 0; padding: 14px 18px;">
+                <section class="admin-section" style="width: calc(100% - 36px); max-width: 520px; box-sizing: border-box; margin: 22px auto 0; padding: 14px 18px; text-align: center;">
                     <p style="margin: 0; font-size: 0.9rem;">Verified a level not on the list?</p>
-                    <button class="btn btn-secondary" style="margin-top: 8px; padding: 7px 12px; font-size: 0.85rem;" type="button" @click="showLevelRequest = !showLevelRequest">Request a Level</button>
-                    <div v-if="showLevelRequest" style="margin-top: 14px;">
-                        <h2>Request an Unlisted Level</h2>
+                    <button class="btn btn-secondary" style="margin: 8px auto 0; padding: 7px 12px; font-size: 0.85rem;" type="button" @click="showLevelRequest = !showLevelRequest">Request a Level</button>
+                    <div v-if="showLevelRequest" style="margin-top: 14px; text-align: left;">
+                        <h2 style="text-align: center;">Request an Unlisted Level</h2>
                         <p class="submission-intro">Send the level details to staff. If approved, it will be added to the record submission dropdown.</p>
                         <div class="submission-form">
                             <label>Level Name<input v-model.trim="levelRequest.name" required maxlength="100"></label>
