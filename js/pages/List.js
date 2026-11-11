@@ -119,7 +119,8 @@ export default {
         loading: true,
         selected: 0,
         errors: [],
-        removedRecordsChannel: null,\n        aredlRefreshInterval: null,
+        removedRecordsChannel: null,
+        aredlRefreshInterval: null,\n        aredlRefreshInterval: null,
         roleIconMap,
         store
     }),
@@ -186,12 +187,39 @@ export default {
             .subscribe();
     },
     beforeUnmount() {
+        if (this.aredlRefreshInterval) {
+            clearInterval(this.aredlRefreshInterval);
+            this.aredlRefreshInterval = null;
+        }
         if (this.removedRecordsChannel) {
             supabase.removeChannel(this.removedRecordsChannel);
             this.removedRecordsChannel = null;
         }
     },
     methods: {
+        async refreshAredlRanks() {
+            try {
+                const response = await fetch('https://api.aredl.net/v2/api/levels');
+                if (!response.ok) throw new Error('AREDL API returned ' + response.status);
+                const payload = await response.json();
+                const aredlLevels = Array.isArray(payload) ? payload : (payload.data || payload.levels || []);
+                const rankById = new Map();
+                for (const item of aredlLevels) {
+                    const id = item.level_id ?? item.gd_level_id ?? item.id;
+                    const rank = Number(item.position ?? item.rank);
+                    if (id !== null && id !== undefined && Number.isFinite(rank) && rank > 0) {
+                        rankById.set(String(id), rank);
+                    }
+                }
+                this.list = this.list.map(([level, err]) => {
+                    if (!level) return [level, err];
+                    const rank = rankById.get(String(level.id));
+                    return [{ ...level, aredlRank: rank ?? null }, err];
+                });
+            } catch (error) {
+                console.warn('Could not refresh AREDL placements:', error);
+            }
+        },
         youtubeThumbnail(url) {
             if (!url) return '';
             try {
