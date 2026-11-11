@@ -7,9 +7,7 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   const json = (body: unknown, status = 200) =>
     new Response(JSON.stringify(body), {
@@ -23,7 +21,6 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
     const webhookUrl = Deno.env.get("DISCORD_WEBHOOK_URL");
-
     if (!supabaseUrl || !anonKey || !webhookUrl) {
       return json({ error: "The announcement function is not fully configured." }, 500);
     }
@@ -34,42 +31,91 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authorization } },
     });
-
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData.user) return json({ error: "Invalid session." }, 401);
 
     const { data: staff, error: staffError } = await supabase
-      .from("snagd_staff")
-      .select("user_id")
-      .eq("user_id", userData.user.id)
-      .maybeSingle();
-
+      .from("snagd_staff").select("user_id").eq("user_id", userData.user.id).maybeSingle();
     if (staffError || !staff) return json({ error: "Staff access required." }, 403);
 
     const body = await req.json();
-    const levelName = String(body.levelName || "").trim().slice(0, 100);
-    const levelId = String(body.levelId || "").trim().slice(0, 30);
-    const verifier = String(body.verifier || "").trim().slice(0, 80);
+    const eventType = String(body.eventType || "");
+    const clean = (value: unknown, max = 100) => String(value ?? "").trim().slice(0, max);
+    const levelName = clean(body.levelName);
+    const levelId = clean(body.levelId, 30);
+    const verifier = clean(body.verifier, 80);
+    const username = clean(body.username, 80);
+    const percent = clean(body.percent, 10);
+    const hz = clean(body.hz, 10);
+    const proofUrl = clean(body.proofUrl, 500);
     const listUrl = "https://list.snagd.workers.dev/";
 
-    if (!levelName || !levelId || !verifier) {
-      return json({ error: "Level name, ID, and verifier are required." }, 400);
+    const events: Record<string, { title: string; description: string; fields: Array<{ name: string; value: string; inline?: boolean }> }> = {
+      level_added: {
+        title: "A New Level Has Been Added!",
+        description: "A new Extreme Demon has been added to the SNAGD list.",
+        fields: [
+          { name: "Level", value: levelName, inline: true },
+          { name: "Level ID", value: levelId, inline: true },
+          { name: "Verified by", value: verifier, inline: true },
+        ],
+      },
+      level_request_rejected: {
+        title: "A Level Request Was Rejected",
+        description: "A submitted level request was reviewed by SNAGD staff.",
+        fields: [{ name: "Level", value: levelName, inline: true }, { name: "Level ID", value: levelId, inline: true }],
+      },
+      level_removed: {
+        title: "A Level Was Removed",
+        description: "A level has been removed from the SNAGD list.",
+        fields: [{ name: "Level", value: levelName, inline: true }, { name: "Level ID", value: levelId || "Unknown", inline: true }],
+      },
+      record_added: {
+        title: "A New Record Has Been Added!",
+        description: "A player record has been approved and added to the public list.",
+        fields: [
+          { name: "Player", value: username, inline: true },
+          { name: "Level", value: levelName, inline: true },
+          { name: "Progress", value: percent + "%", inline: true },
+          { name: "Refresh Rate", value: hz + "Hz", inline: true },
+          ...(proofUrl ? [{ name: "Proof", value: proofUrl }] : []),
+        ],
+      },
+      record_rejected: {
+        title: "A Record Submission Was Rejected",
+        description: "A record submission was reviewed by SNAGD staff.",
+        fields: [
+          { name: "Player", value: username, inline: true },
+          { name: "Level", value: levelName, inline: true },
+          { name: "Progress", value: percent + "%", inline: true },
+        ],
+      },
+      record_removed: {
+        title: "A Record Was Removed",
+        description: "A player record has been removed from the public list.",
+        fields: [
+          { name: "Player", value: username, inline: true },
+          { name: "Level", value: levelName, inline: true },
+          { name: "Progress", value: percent + "%", inline: true },
+        ],
+      },
+    };
+
+    const event = events[eventType];
+    if (!event) return json({ error: "Unknown announcement type." }, 400);
+    if (event.fields.some((field) => !field.value || !field.value.trim())) {
+      return json({ error: "Some required announcement details are missing." }, 400);
     }
 
     const discordResponse = await fetch(webhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        content: null,
         embeds: [{
-          title: "A New Level Has Been Added!",
+          title: event.title,
           color: 0x8b5cf6,
-          fields: [
-            { name: "Level", value: levelName, inline: true },
-            { name: "Level ID", value: levelId, inline: true },
-            { name: "Verified by", value: verifier, inline: true },
-          ],
-          description: "A new Extreme Demon has been added to the SNAGD list.",
+          description: event.description,
+          fields: event.fields,
           url: listUrl,
           footer: { text: "SNAGD • Extreme Demon List" },
           timestamp: new Date().toISOString(),
@@ -83,7 +129,6 @@ Deno.serve(async (req) => {
       console.error("Discord webhook failed:", discordResponse.status, detail);
       return json({ error: "Discord rejected the announcement." }, 502);
     }
-
     return json({ success: true });
   } catch (error) {
     console.error("Announcement error:", error);
