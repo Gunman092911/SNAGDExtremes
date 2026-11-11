@@ -80,6 +80,22 @@ export async function fetchList() {
             console.warn('Could not load approved community submissions:', error.message);
         }
 
+        // Apply staff-managed verifier changes to both built-in and staff-added levels.
+        try {
+            const { data: verifierOverrides, error } = await supabase
+                .from('snagd_verifier_overrides')
+                .select('level_key, verifier');
+            if (error) throw error;
+            const overrides = new Map((verifierOverrides || []).map(item => [item.level_key, item.verifier]));
+            for (const [level] of levels) {
+                if (level && overrides.has(level.path)) level.verifier = overrides.get(level.path);
+            }
+        } catch (error) {
+            if (error.code !== '42P01' && error.code !== 'PGRST205') {
+                console.warn('Could not load verifier overrides:', error.message);
+            }
+        }
+
         // Hide records that staff have removed from the public list.
         try {
             const { data: removedRecords, error } = await supabase
