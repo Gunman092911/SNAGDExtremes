@@ -270,3 +270,60 @@
         transition: none;
     }
 }
+
+/* Player account and record-status panel */
+.account-panel {
+    width: min(100%, 42rem);
+}
+
+.account-mode {
+    display: flex;
+    gap: .75rem;
+    margin: 1.25rem 0;
+}
+
+.account-mode .btn {
+    flex: 1;
+    min-height: 2.8rem;
+    border-radius: .7rem;
+}
+
+.account-notification {
+    align-items: center;
+}
+
+.account-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: .45rem .75rem;
+    border-radius: 999px;
+    font-size: .82rem;
+    font-weight: 700;
+    background: color-mix(in srgb, var(--color-on-background) 9%, var(--color-background));
+}
+
+.account-status.status-approved {
+    color: #16834a;
+    background: color-mix(in srgb, #16834a 13%, var(--color-background));
+}
+
+.account-status.status-rejected {
+    color: #c43a32;
+    background: color-mix(in srgb, #c43a32 13%, var(--color-background));
+}
+
+.account-status.status-pending {
+    color: color-mix(in srgb, var(--color-on-background) 75%, transparent);
+}
+
+@media (max-width: 700px) {
+    .account-notification {
+        align-items: flex-start;
+    }
+
+    .account-status {
+        align-self: flex-start;
+    }
+}
