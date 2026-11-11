@@ -75,6 +75,23 @@ export default {
                     </section>
 
                     <section class="admin-section">
+                        <h2>Change Level YouTube Link</h2>
+                        <p class="submission-intro">Choose a level and update the video shown when visitors view that level. Paste its YouTube URL.</p>
+                        <label>Choose a level
+                            <select v-model="selectedVideoLevel" @change="loadVideoDraft">
+                                <option value="">Select a level...</option>
+                                <option v-for="level in orderedLevels" :key="level.path" :value="level.path">{{ level.name }}</option>
+                            </select>
+                        </label>
+                        <div v-if="selectedVideoLevel" class="submission-form">
+                            <label>YouTube video URL
+                                <input v-model.trim="videoDraft" type="url" maxlength="500" placeholder="https://www.youtube.com/watch?v=...">
+                            </label>
+                            <button class="btn" @click="saveVideoLink" :disabled="busy || !videoDraft.trim()">Save YouTube Link</button>
+                        </div>
+                    </section>
+
+                    <section class="admin-section">
                         <h2>Change Level Verifier</h2>
                         <p class="submission-intro">Choose any level on the list and update the username credited as its verifier.</p>
                         <label>Choose a level
@@ -155,6 +172,8 @@ export default {
         selectedRecordLevel: '',
         selectedVerifierLevel: '',
         verifierDraft: '',
+        selectedVideoLevel: '',
+        videoDraft: '',
         loading: false, busy: false, error: '', message: '',
         newLevel: { name: '', id: '', verifier: '', verification: '', percentToQualify: 100 },
     }),
@@ -241,6 +260,12 @@ export default {
             } else if (this.selectedVerifierLevel) {
                 this.loadVerifierDraft();
             }
+            if (!this.selectedVideoLevel && this.orderedLevels.length) {
+                this.selectedVideoLevel = this.orderedLevels[0].path;
+                this.loadVideoDraft();
+            } else if (this.selectedVideoLevel) {
+                this.loadVideoDraft();
+            }
         },
         startLevelDrag(index, event) {
             if (this.busy) {
@@ -314,6 +339,39 @@ export default {
         loadVerifierDraft() {
             const level = this.orderedLevels.find(item => item.path === this.selectedVerifierLevel);
             this.verifierDraft = level ? (level.verifier || '') : '';
+        },
+        loadVideoDraft() {
+            const level = this.orderedLevels.find(item => item.path === this.selectedVideoLevel);
+            this.videoDraft = level ? (level.verification || '') : '';
+        },
+        async saveVideoLink() {
+            const level = this.orderedLevels.find(item => item.path === this.selectedVideoLevel);
+            const verification = this.videoDraft.trim();
+            if (!level || !verification) return;
+            let parsed;
+            try {
+                parsed = new URL(verification);
+            } catch {
+                this.error = 'Enter a valid YouTube URL.';
+                return;
+            }
+            if (!['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be', 'www.youtu.be'].includes(parsed.hostname.toLowerCase())) {
+                this.error = 'Please use a YouTube video URL.';
+                return;
+            }
+            this.error = ''; this.message = ''; this.busy = true;
+            try {
+                const { error } = await supabase.from('snagd_video_overrides').upsert({
+                    level_key: level.path,
+                    verification,
+                    updated_at: new Date().toISOString(),
+                }, { onConflict: 'level_key' });
+                if (error) throw error;
+                level.verification = verification;
+                this.message = 'YouTube link for ' + level.name + ' updated.';
+            } catch (error) {
+                this.error = error.message || 'Could not update the YouTube link. Check that the video override SQL setup has been run.';
+            } finally { this.busy = false; }
         },
         async saveVerifier() {
             const level = this.orderedLevels.find(item => item.path === this.selectedVerifierLevel);
