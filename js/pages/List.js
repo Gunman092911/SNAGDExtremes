@@ -32,9 +32,7 @@ export default {
                         <td class="level" :class="{ 'active': selected == i, 'error': !level }">
                             <button @click="selected = i">
                                 <span class="type-label-lg">{{ level?.name || \`Error (\${err}.json)\` }}</span>
-                                <small class="difficulty-badge">{{ difficultyLabel(level) }}</small>
-                            <small v-if="!level?.aredlRank" class="unranked-badge">Unranked</small>
-                            <small v-else class="aredl-rank-badge">AREDL #{{ level.aredlRank }}</small>
+                                <small v-if="level?.aredlRank" class="aredl-rank-badge">AREDL #{{ level.aredlRank }}</small>
                             </button>
                         </td>
                     </tr>
@@ -44,10 +42,8 @@ export default {
                 <div class="level-background-image" aria-hidden="true"></div>
                 <div class="level" v-if="level">
                     <h1>{{ level.name }}</h1>
-                    <div class="level-difficulty-badges">
-                        <span class="difficulty-badge">{{ difficultyLabel(level) }}</span>
-                        <span v-if="!level.aredlRank" class="unranked-badge">Unranked · No official AREDL placement</span>
-                        <span v-else class="aredl-rank-badge">AREDL #{{ level.aredlRank }}</span>
+                    <div v-if="level.aredlRank" class="level-difficulty-badges">
+                        <span class="aredl-rank-badge">AREDL #{{ level.aredlRank }}</span>
                     </div>
                     <LevelAuthors :author="level.author" :creators="level.creators" :verifier="level.verifier" :publisher="level.publisher"></LevelAuthors>
                     <iframe class="video" id="videoframe" :src="video" frameborder="0"></iframe>
@@ -254,11 +250,6 @@ export default {
             } catch (error) {
                 console.warn('Could not refresh AREDL placements:', error);
             }
-        },
-        difficultyLabel(level) {
-            if (!level) return 'Unrated';
-            if (level.difficulty) return level.difficulty;
-            return level.aredlRank ? 'Extreme Demon' : 'Unrated';
         },
         youtubeThumbnail(url) {
             if (!url) return '';
