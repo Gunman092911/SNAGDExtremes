@@ -1,0 +1,22 @@
+{
+    "id": 23262780,
+    "name": "Sakupen Hell",
+    "author": "TrusTa",
+    "creators": "-",
+    "verifier": "Orbitra",
+    "verification": "https://www.youtube.com/watch?v=pbWqJpASyq8",
+    "percentToQualify": "100",
+    "password": [],
+    "records": [
+        {
+        "user": "Shepster",
+        "link": "https://www.youtube.com/watch?v=Irtme1lhks0",
+        "percent": 100
+        },
+        {
+        "user": "Flight",
+        "link": "https://www.youtube.com/watch?v=pbWqJpASyq8",
+        "percent": 100
+        }
+    ]
+}
