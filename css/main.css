@@ -1,6 +1,5 @@
 /* Use the same Lexend Deca typeface throughout the entire site. */
 :root {
-    font-size: 15px;
     --font-family: "Lexend Deca", sans-serif;
 }
 
@@ -68,7 +67,7 @@ main {
 header {
     display: flex;
     padding-inline: 1rem;
-    height: 3.5rem;
+    height: 4rem;
     background-color: var(--color-primary);
     color: var(--color-on-primary);
 }
