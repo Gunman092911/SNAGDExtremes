@@ -227,3 +227,64 @@ p::after,
     margin-top: -0.4416666667em;
     display: table;
 }
+
+
+/* Readable, consistent typography across every public page. */
+h1, .type-h1, .type-headline-lg {
+    font-size: clamp(2rem, 3.2vw, 3.2rem);
+    line-height: 1.2;
+    letter-spacing: -0.035em;
+}
+h2, .type-h2, .type-headline-md {
+    font-size: clamp(1.5rem, 2.4vw, 2.15rem);
+    line-height: 1.25;
+    letter-spacing: -0.025em;
+}
+h3, .type-h3, .type-headline-sm {
+    font-size: clamp(1.15rem, 1.8vw, 1.45rem);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+}
+h4, .type-h4, .type-title-lg,
+h5, .type-h5, .type-title-md,
+h6, dt, .type-h6, .type-title-sm {
+    line-height: 1.35;
+    letter-spacing: 0;
+}
+p, .type-body {
+    line-height: 1.6;
+    letter-spacing: 0;
+}
+.type-label-lg, .type-label-md, .type-label-sm,
+label, input[type="text"], input[type="number"] {
+    line-height: 1.4;
+    letter-spacing: 0;
+}
+/* Remove the old negative-margin font-metric hacks that made text feel cramped. */
+h1::before, h1::after,
+.type-h1::before, .type-h1::after,
+.type-headline-lg::before, .type-headline-lg::after,
+h2::before, h2::after,
+.type-h2::before, .type-h2::after,
+.type-headline-md::before, .type-headline-md::after,
+h3::before, h3::after,
+.type-h3::before, .type-h3::after,
+.type-headline-sm::before, .type-headline-sm::after,
+h4::before, h4::after,
+.type-h4::before, .type-h4::after,
+.type-title-lg::before, .type-title-lg::after,
+h5::before, h5::after,
+.type-h5::before, .type-h5::after,
+.type-title-md::before, .type-title-md::after,
+h6::before, h6::after,
+dt::before, dt::after,
+.type-h6::before, .type-h6::after,
+.type-title-sm::before, .type-title-sm::after,
+.type-label-lg::before, .type-label-lg::after,
+.type-label-md::before, .type-label-md::after,
+.type-label-sm::before, .type-label-sm::after,
+p::before, p::after,
+.type-body::before, .type-body::after {
+    content: none;
+    display: none;
+}
