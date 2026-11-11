@@ -222,13 +222,35 @@ export default {
                 const { error } = await supabase.from('snagd_level_requests')
                     .update({ status, reviewed_at: new Date().toISOString() }).eq('id', request.id);
                 if (error) throw error;
+                let announcementSent = true;
+                if (status === 'approved') {
+                    announcementSent = await this.announceNewLevel({
+                        levelName: request.level_name,
+                        levelId: request.level_id,
+                        verifier: request.verifier,
+                    });
+                }
                 this.message = status === 'approved'
-                    ? request.level_name + ' was approved and added. Use Reorder Public List to choose its position.'
+                    ? request.level_name + ' was approved and added. Use Reorder Public List to choose its position.' +
+                        (announcementSent ? ' Discord announcement sent!' : ' However, the Discord announcement failed. Check the webhook setup.')
                     : request.level_name + ' request was rejected.';
                 await Promise.all([this.loadLevelRequests(), this.loadLevels()]);
             } catch (error) {
                 this.error = error.message || 'Could not review this level request.';
             } finally { this.busy = false; }
+        },
+        async announceNewLevel(level) {
+            try {
+                const { error } = await supabase.functions.invoke('announce-new-level', { body: level });
+                if (error) {
+                    console.error('Discord announcement failed:', error);
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.error('Discord announcement failed:', error);
+                return false;
+            }
         },
         async loadSubmissions() {
             this.loading = true;
