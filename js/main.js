@@ -12,6 +12,23 @@ const themes = {
     xo: { name: 'Silver', primary: '#b8b8c5', background: '#15151b', panel: '#22222b', text: '#f2f2f7', header: '#09090e' },
 };
 
+
+// Blend a hex color toward another color. Used to derive dark mode from the
+// currently selected theme instead of replacing it with a fixed palette.
+function blendHex(color, target, amount) {
+    const parse = (value) => {
+        const hex = String(value || '').replace('#', '');
+        if (!/^[0-9a-f]{6}$/i.test(hex)) return null;
+        return [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
+    };
+    const from = parse(color);
+    const to = parse(target);
+    if (!from || !to) return color;
+    return '#' + from.map((channel, i) =>
+        Math.round(channel + (to[i] - channel) * amount).toString(16).padStart(2, '0')
+    ).join('');
+}
+
 const savedTheme = (() => {
     try { return JSON.parse(localStorage.getItem('snagdTheme')) || themes.default; }
     catch { return themes.default; }
@@ -35,16 +52,18 @@ export const store = Vue.reactive({
     get themeStyle() {
         const t = this.theme;
         return {
+            // Dark mode keeps the selected theme's hue, but shifts its surfaces
+            // darker and its text lighter so everything remains readable.
             '--color-primary': t.primary,
-            '--color-background': t.background,
-            '--color-on-background': t.text,
-            '--snagd-panel': t.panel,
-            '--snagd-header': t.header,
-            '--snagd-border': this.dark ? '#3a4054' : '#e1e3ee',
-            '--snagd-muted': this.dark ? '#a0a6bc' : '#74798e',
-            '--snagd-control-bg': t.panel,
-            '--snagd-control-border': this.dark ? '#3a4054' : '#d9dbea',
-            '--snagd-control-hover': t.background,
+            '--color-background': this.dark ? blendHex(t.background, '#080a12', 0.78) : t.background,
+            '--color-on-background': this.dark ? blendHex(t.text, '#ffffff', 0.22) : t.text,
+            '--snagd-panel': this.dark ? blendHex(t.panel, '#080a12', 0.76) : t.panel,
+            '--snagd-header': this.dark ? blendHex(t.header, '#05060b', 0.55) : t.header,
+            '--snagd-border': this.dark ? blendHex(t.primary, '#ffffff', 0.22) : '#e1e3ee',
+            '--snagd-muted': this.dark ? blendHex(t.text, '#ffffff', 0.42) : '#74798e',
+            '--snagd-control-bg': this.dark ? blendHex(t.panel, '#080a12', 0.72) : t.panel,
+            '--snagd-control-border': this.dark ? blendHex(t.primary, '#ffffff', 0.18) : '#d9dbea',
+            '--snagd-control-hover': this.dark ? blendHex(t.background, '#ffffff', 0.08) : t.background,
         };
     },
     toggleDark() {
