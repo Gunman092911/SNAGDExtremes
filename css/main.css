@@ -280,3 +280,120 @@ button, input, select, textarea {
 @media (max-width: 900px) {
     header { padding-inline: .7rem; }
 }
+
+
+/* A little more SNAGD personality without making the interface feel busy. */
+:root {
+    --snagd-accent-soft: rgba(104, 85, 217, .10);
+    --snagd-accent-border: rgba(104, 85, 217, .32);
+    --snagd-control-bg: #ffffff;
+    --snagd-control-border: #d9dbea;
+    --snagd-control-hover: #f8f8fc;
+    --snagd-focus-ring: rgba(104, 85, 217, .18);
+    --snagd-radius-control: .72rem;
+}
+
+main.dark {
+    --snagd-accent-soft: rgba(138, 121, 255, .16);
+    --snagd-accent-border: rgba(138, 121, 255, .4);
+    --snagd-control-bg: #191e2c;
+    --snagd-control-border: #3a4054;
+    --snagd-control-hover: #232a3b;
+    --snagd-focus-ring: rgba(138, 121, 255, .22);
+}
+
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+    color: var(--color-on-background);
+    background-color: var(--snagd-control-bg);
+    border: 1px solid var(--snagd-control-border);
+    border-radius: var(--snagd-radius-control);
+    transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):hover,
+select:hover,
+textarea:hover {
+    border-color: var(--snagd-accent-border);
+    background-color: var(--snagd-control-hover);
+}
+
+input:not([type="checkbox"]):not([type="radio"]):focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--snagd-focus-ring);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--snagd-muted);
+    opacity: .82;
+}
+
+/* Consistent dropdowns across submission, admin, and any future pages. */
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    min-height: 2.8rem;
+    padding: .72rem 2.8rem .72rem .9rem;
+    font: inherit;
+    font-size: .92rem;
+    font-weight: 500;
+    line-height: 1.35;
+    cursor: pointer;
+    background-image: linear-gradient(45deg, transparent 50%, var(--snagd-muted) 50%), linear-gradient(135deg, var(--snagd-muted) 50%, transparent 50%);
+    background-position: calc(100% - 1.22rem) 50%, calc(100% - .92rem) 50%;
+    background-size: .32rem .32rem, .32rem .32rem;
+    background-repeat: no-repeat;
+}
+
+select:disabled {
+    cursor: not-allowed;
+    opacity: .58;
+}
+
+select option,
+select optgroup {
+    color: var(--color-on-background);
+    background: var(--snagd-control-bg);
+}
+
+input:not([type="checkbox"]):not([type="radio"]),
+textarea {
+    min-height: 2.8rem;
+    padding: .72rem .9rem;
+    font: inherit;
+    font-size: .92rem;
+}
+
+textarea {
+    min-height: 6rem;
+    resize: vertical;
+}
+
+button,
+.btn,
+a {
+    -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+.btn:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    input:not([type="checkbox"]):not([type="radio"]),
+    select,
+    textarea {
+        transition: none;
+    }
+}
