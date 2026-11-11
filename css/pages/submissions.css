@@ -303,3 +303,39 @@
         transition: none;
     }
 }
+
+
+/* Unified level manager and smooth record drag-and-drop controls. */
+.level-manager-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; }
+.level-manager-content { display:grid; gap:1.15rem; margin-top:1.2rem; }
+.level-manager-subsection {
+    min-width:0; padding:1rem; border:1px solid color-mix(in srgb, var(--color-on-background) 10%, transparent);
+    border-radius:.8rem; background:color-mix(in srgb, var(--color-background) 72%, transparent);
+}
+.level-manager-subsection h3 { margin:0 0 .75rem; font-size:1rem; }
+.level-manager-subheading { display:flex; align-items:center; justify-content:space-between; gap:.75rem; }
+.level-manager-subheading h3 { margin:0; }
+.level-manager-count { padding:.3rem .6rem; border-radius:999px; background:color-mix(in srgb, var(--color-primary) 12%, transparent); color:var(--color-primary); font-size:.76rem; font-weight:700; }
+.record-sort-list { display:grid; gap:.55rem; margin:.8rem 0 1rem; }
+.record-sort-card { margin:0; padding:.75rem .85rem; gap:.8rem; }
+.record-drag-handle { flex:none; padding:.25rem .35rem; border-radius:.4rem; color:var(--color-primary); cursor:grab; font-size:1.4rem; line-height:1; user-select:none; touch-action:none; }
+.record-drag-handle:active { cursor:grabbing; }
+.record-sort-details { min-width:0; flex:1; }
+.record-sort-details p { margin:.2rem 0 0; font-size:.84rem; }
+.record-sort-card .btn { flex:none; padding:.6rem .75rem; border-radius:.55rem; font-size:.82rem; }
+.record-dragging { opacity:.42; }
+.record-drop-target { border-color:var(--color-primary); box-shadow:0 0 0 2px color-mix(in srgb, var(--color-primary) 16%, transparent); }
+.level-manager-empty { margin:.8rem 0; color:color-mix(in srgb, var(--color-on-background) 65%, transparent); }
+.level-manager-settings { display:grid; grid-template-columns:1fr 1.4fr; gap:1rem; }
+.level-manager-inline { display:flex; align-items:center; gap:.55rem; }
+.level-manager-inline input,.level-manager-video-input input { box-sizing:border-box; width:100%; min-width:0; }
+.level-manager-inline .btn,.level-manager-subsection > .btn { flex:none; padding:.7rem .9rem; border-radius:.6rem; box-shadow:none; }
+.level-manager-video-input { display:block; margin-bottom:.6rem; }
+@media(max-width:650px) {
+    .level-manager-settings { grid-template-columns:1fr; }
+    .record-sort-card { align-items:center; flex-direction:row; }
+    .record-sort-card .btn { flex:none; }
+}
+@media(prefers-reduced-motion:reduce) {
+    .record-sort-card { transition:none; }
+}
