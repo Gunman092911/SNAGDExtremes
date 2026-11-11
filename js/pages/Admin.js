@@ -53,58 +53,59 @@ export default {
                         </transition-group>
                         <button class="btn" @click="saveOrder" :disabled="busy || !orderedLevels.length">Save List Order</button>
                     </section>
-                    <section class="admin-section">
-                        <h2>Manage Records</h2>
-                        <p class="submission-intro">Remove an individual record from a level without deleting the level.</p>
-                        <label>Choose a level
-                            <select v-model="selectedRecordLevel">
-                                <option value="">Select a level...</option>
-                                <option v-for="level in orderedLevels" :key="level.path" :value="level.path">{{ level.name }}</option>
-                            </select>
-                        </label>
-                        <p v-if="selectedRecordLevel && !recordsForSelectedLevel.length">This level has no records.</p>
-                        <article v-for="record in recordsForSelectedLevel" :key="record.user + record.link + record.percent" class="submission-card">
+                    <section class="admin-section level-manager">
+                        <div class="level-manager-heading">
                             <div>
-                                <strong>{{ record.user }} — {{ record.percent }}%</strong>
-                                <p>{{ record.hz }}Hz · <a :href="record.link" target="_blank" rel="noopener">Proof video</a></p>
+                                <h2>Manage Level</h2>
+                                <p class="submission-intro">Choose a level to reorder or remove its records, update its verifier, or change its YouTube video.</p>
                             </div>
-                            <div class="submission-actions">
-                                <button class="btn btn-danger" @click="deleteRecord(record)" :disabled="busy">Remove Record</button>
-                            </div>
-                        </article>
-                    </section>
-
-                    <section class="admin-section">
-                        <h2>Change Level YouTube Link</h2>
-                        <p class="submission-intro">Choose a level and update the video shown when visitors view that level. Paste its YouTube URL.</p>
-                        <label>Choose a level
-                            <select v-model="selectedVideoLevel" @change="loadVideoDraft">
-                                <option value="">Select a level...</option>
-                                <option v-for="level in orderedLevels" :key="level.path" :value="level.path">{{ level.name }}</option>
-                            </select>
-                        </label>
-                        <div v-if="selectedVideoLevel" class="submission-form">
-                            <label>YouTube video URL
-                                <input v-model.trim="videoDraft" type="url" maxlength="500" placeholder="https://www.youtube.com/watch?v=...">
-                            </label>
-                            <button class="btn" @click="saveVideoLink" :disabled="busy || !videoDraft.trim()">Save YouTube Link</button>
                         </div>
-                    </section>
-
-                    <section class="admin-section">
-                        <h2>Change Level Verifier</h2>
-                        <p class="submission-intro">Choose any level on the list and update the username credited as its verifier.</p>
                         <label>Choose a level
-                            <select v-model="selectedVerifierLevel" @change="loadVerifierDraft">
+                            <select v-model="selectedRecordLevel" @change="loadLevelManagementDrafts">
                                 <option value="">Select a level...</option>
                                 <option v-for="level in orderedLevels" :key="level.path" :value="level.path">{{ level.name }}</option>
                             </select>
                         </label>
-                        <div v-if="selectedVerifierLevel" class="submission-form">
-                            <label>Verified by
-                                <input v-model.trim="verifierDraft" maxlength="50" placeholder="Verifier username">
-                            </label>
-                            <button class="btn" @click="saveVerifier" :disabled="busy || !verifierDraft.trim()">Save Verifier</button>
+                        <div v-if="selectedRecordLevel" class="level-manager-content">
+                            <div class="level-manager-subsection">
+                                <div class="level-manager-subheading">
+                                    <h3>Records & Victors</h3>
+                                    <span class="level-manager-count">{{ recordsForSelectedLevel.length }} records</span>
+                                </div>
+                                <p class="submission-intro">Drag using the handle to set the order shown on the public level page.</p>
+                                <p v-if="!recordsForSelectedLevel.length" class="level-manager-empty">This level has no records yet.</p>
+                                <div v-else class="record-sort-list">
+                                    <article v-for="(record, index) in recordsForSelectedLevel" :key="recordKey(record)" class="submission-card record-sort-card"
+                                        :class="{ 'record-dragging': recordDragIndex === index, 'record-drop-target': recordDragOverIndex === index }"
+                                        @dragover.prevent="recordDragOverIndex = index" @drop.prevent="dropRecord(index)">
+                                        <span class="record-drag-handle" draggable="true" title="Hold and drag to reorder"
+                                            aria-label="Hold and drag to reorder record"
+                                            @dragstart="startRecordDrag(index, $event)" @dragend="endRecordDrag">⠿</span>
+                                        <div class="record-sort-details">
+                                            <strong>{{ record.user }} — {{ record.percent }}%</strong>
+                                            <p>{{ record.hz }}Hz · <a :href="record.link" target="_blank" rel="noopener">Proof video</a></p>
+                                        </div>
+                                        <button class="btn btn-danger" @click="deleteRecord(record)" :disabled="busy">Remove</button>
+                                    </article>
+                                </div>
+                                <button class="btn" @click="saveRecordOrder" :disabled="busy || !recordOrderDirty">Save Record Order</button>
+                            </div>
+                            <div class="level-manager-settings">
+                                <div class="level-manager-subsection">
+                                    <h3>Verifier</h3>
+                                    <div class="level-manager-inline">
+                                        <input v-model.trim="verifierDraft" maxlength="50" placeholder="Verifier username">
+                                        <button class="btn" @click="saveVerifier" :disabled="busy || !verifierDraft.trim()">Save</button>
+                                    </div>
+                                </div>
+                                <div class="level-manager-subsection">
+                                    <h3>YouTube Video</h3>
+                                    <label class="level-manager-video-input">
+                                        <input v-model.trim="videoDraft" type="url" maxlength="500" placeholder="https://www.youtube.com/watch?v=...">
+                                    </label>
+                                    <button class="btn" @click="saveVideoLink" :disabled="busy || !videoDraft.trim()">Save Video Link</button>
+                                </div>
+                            </div>
                         </div>
                     </section>
 
@@ -253,7 +254,7 @@ export default {
             this.orderedLevels = (list || []).filter(([level]) => !!level).map(([level]) => ({ ...level, moveTo: null }));
             this.originalOrder = this.orderedLevels.map(level => level.path);
             this.movedLevelPaths = [];
-            if (!this.selectedRecordLevel && this.orderedLevels.length) this.selectedRecordLevel = this.orderedLevels[0].path;
+            if (!this.selectedRecordLevel && this.orderedLevels.length) this.selectedRecordLevel = this.orderedLevels[0].path;\n            if (this.selectedRecordLevel) this.loadLevelManagementDrafts();
             if (!this.selectedVerifierLevel && this.orderedLevels.length) {
                 this.selectedVerifierLevel = this.orderedLevels[0].path;
                 this.loadVerifierDraft();
