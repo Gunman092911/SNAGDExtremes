@@ -49,6 +49,21 @@ export default {
                         </form>
                     </section>
 
+                    <section class="admin-section">
+                        <h2>Manage Verified Levels ({{ levels.length }})</h2>
+                        <p class="submission-intro">Remove a level you added by mistake. This removes it from the public list and submission dropdown.</p>
+                        <p v-if="!levels.length">No staff-added levels yet.</p>
+                        <article v-for="level in levels" :key="level.level_key" class="submission-card">
+                            <div>
+                                <h3>{{ level.name }}</h3>
+                                <small>Level ID: {{ level.id }} · Verified by {{ level.verifier }}</small>
+                            </div>
+                            <div class="submission-actions">
+                                <button class="btn btn-danger" @click="deleteLevel(level)" :disabled="busy">Delete</button>
+                            </div>
+                        </article>
+                    </section>
+
                     <h2>Pending Submissions ({{ submissions.length }})</h2>
                     <p v-if="loading">Loading submissions...</p>
                     <p v-else-if="!submissions.length">There are no pending submissions.</p>
@@ -70,7 +85,7 @@ export default {
         </main>
     `,
     data: () => ({
-        email: '', password: '', user: null, submissions: [],
+        email: '', password: '', user: null, submissions: [], levels: [],
         loading: false, busy: false, error: '', message: '',
         newLevel: { name: '', id: '', verifier: '', verification: '', percentToQualify: 100 },
     }),
@@ -91,7 +106,7 @@ export default {
                 return;
             }
             this.user = user;
-            await this.loadSubmissions();
+            await Promise.all([this.loadSubmissions(), this.loadLevels()]);
         },
         async login() {
             this.error = ''; this.message = ''; this.busy = true;
@@ -119,6 +134,13 @@ export default {
         async logout() {
             await supabase.auth.signOut();
             this.user = null; this.submissions = [];
+        },
+        async loadLevels() {
+            const { data, error } = await supabase.from('snagd_levels')
+                .select('level_key, id, name, verifier')
+                .order('created_at', { ascending: true });
+            if (error) this.error = error.message;
+            else this.levels = data || [];
         },
         async loadSubmissions() {
             this.loading = true;
@@ -154,8 +176,21 @@ export default {
                 }
                 this.message = this.newLevel.name + ' was added. It is now available for record submissions and appears at the bottom of the list.';
                 this.newLevel = { name: '', id: '', verifier: '', verification: '', percentToQualify: 100 };
+                await this.loadLevels();
             } catch (error) {
                 this.error = error.message || 'Could not add the level.';
+            } finally { this.busy = false; }
+        },
+        async deleteLevel(level) {
+            if (!window.confirm('Delete "' + level.name + '"? It will be removed from the public list and submission dropdown.')) return;
+            this.error = ''; this.message = ''; this.busy = true;
+            try {
+                const { error } = await supabase.from('snagd_levels').delete().eq('level_key', level.level_key);
+                if (error) throw error;
+                this.levels = this.levels.filter(item => item.level_key !== level.level_key);
+                this.message = level.name + ' was deleted.';
+            } catch (error) {
+                this.error = error.message || 'Could not delete this level.';
             } finally { this.busy = false; }
         },
         async review(item, status) {
