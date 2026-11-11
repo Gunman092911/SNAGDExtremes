@@ -287,21 +287,9 @@ export default {
                 const { error } = await supabase.from('snagd_submissions').update({ status, reviewed_at: new Date().toISOString() }).eq('id', item.id);
                 if (error) throw error;
 
-                // Send the player an email after the review status has been saved.
-                const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-submission-notification', {
-                    body: { submissionId: item.id },
-                });
-
-                if (emailError || emailResult?.error) {
-                    const reason = emailResult?.error || emailError?.message || 'Email could not be sent.';
-                    this.message = status === 'approved'
-                        ? 'Record approved and added to the public list, but the email failed: ' + reason
-                        : 'Submission rejected, but the email failed: ' + reason;
-                } else {
-                    this.message = status === 'approved'
-                        ? 'Record approved and added to the public list. An email notification was sent to the player.'
-                        : 'Submission rejected. An email notification was sent to the player.';
-                }
+                this.message = status === 'approved'
+                    ? 'Record approved and added to the public list.'
+                    : 'Submission rejected.';
                 await this.loadSubmissions();
             } catch (error) {
                 this.error = error.message || 'Could not update this submission.';
