@@ -36,6 +36,23 @@
     cursor: not-allowed;
     text-decoration: line-through;
 }
+.page-list .list .level button .aredl-rank-badge {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.65rem;
+    padding: 0.2rem 0.45rem;
+    border-radius: 0.35rem;
+    background-color: var(--color-background-hover);
+    color: var(--color-on-background);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+.page-list .list .level.active button .aredl-rank-badge {
+    background-color: var(--color-on-primary);
+    color: var(--color-primary);
+}
 .page-list .list .level button:hover {
     background-color: var(--color-background-hover);
     color: var(--color-on-background-hover);
