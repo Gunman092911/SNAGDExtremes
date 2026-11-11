@@ -31,3 +31,12 @@ with check (
         where public.snagd_staff.user_id = auth.uid()
     )
 );
+
+
+-- Enable live updates so public lists already open receive removals immediately.
+do $$
+begin
+    alter publication supabase_realtime add table public.snagd_removed_records;
+exception
+    when duplicate_object then null;
+end $$;
