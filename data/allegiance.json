@@ -1,0 +1,22 @@
+{
+    "id": 20761188,
+    "name": "Allegiance",
+    "author": "Nikro",
+    "creators": ["Nikro"],
+    "verifier": "Flight",
+    "verification": "https://www.youtube.com/watch?v=VJ8pdfOC9DY",
+    "percentToQualify": "100",
+    "password": [],
+    "records": [
+          {
+            "user": "MikeyGD",
+            "link": "https://www.youtube.com/watch?v=tzJijhFPD_M",
+            "percent": 100
+          },
+          {
+            "user": "Orbitra",
+            "link": [],
+            "percent": 100
+          }
+              ]
+        }
