@@ -145,9 +145,7 @@
 }
 
 
-/* Clear difficulty and official-placement labels. */
-.page-list .difficulty-badge,
-.page-list .unranked-badge,
+/* Official AREDL placement label. */
 .page-list .aredl-rank-badge {
     display: inline-flex;
     align-items: center;
@@ -159,14 +157,6 @@
     font-weight: 700;
     line-height: 1.25;
     white-space: normal;
-}
-.page-list .difficulty-badge {
-    background: color-mix(in srgb, #d97706 15%, var(--color-background));
-    color: color-mix(in srgb, #b45309 88%, var(--color-on-background));
-}
-.page-list .unranked-badge {
-    background: color-mix(in srgb, var(--color-on-background) 9%, var(--color-background));
-    color: color-mix(in srgb, var(--color-on-background) 76%, transparent);
 }
 .page-list .level-difficulty-badges {
     display: flex;
@@ -181,13 +171,9 @@
     flex-wrap: wrap;
     gap: .45rem .55rem;
 }
-.page-list .list .level button .difficulty-badge,
-.page-list .list .level button .unranked-badge,
 .page-list .list .level button .aredl-rank-badge {
     margin-left: 0;
 }
-.page-list .list .level.active button .difficulty-badge,
-.page-list .list .level.active button .unranked-badge,
 .page-list .list .level.active button .aredl-rank-badge {
     background: color-mix(in srgb, var(--color-on-primary) 18%, transparent);
     color: var(--color-on-primary);
