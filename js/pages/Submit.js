@@ -50,20 +50,34 @@ export default {
             const response = await fetch('./data/_list.json');
             if (!response.ok) throw new Error('Could not load the level list.');
             const keys = await response.json();
-            this.levels = (await Promise.all(keys.map(async key => {
+            const staticLevels = await Promise.all(keys.map(async key => {
                 const result = await fetch(`./data/${key}.json`);
                 if (!result.ok) return null;
                 const level = await result.json();
                 return { key, name: level.name };
-            }))).filter(Boolean);
+            }));
+            this.levels = staticLevels.filter(Boolean);
+
+            // Levels added by staff are stored in Supabase and appended to the dropdown.
+            const { data, error } = await supabase.from('snagd_levels')
+                .select('level_key, name').order('created_at', { ascending: true });
+            if (!error) {
+                const existing = new Set(this.levels.map(level => level.key));
+                for (const level of data || []) {
+                    if (!existing.has(level.level_key)) {
+                        this.levels.push({ key: level.level_key, name: level.name });
+                    }
+                }
+            } else if (error.code !== '42P01' && error.code !== 'PGRST205') {
+                console.warn('Could not load newly added levels:', error.message);
+            }
         } catch (error) {
             this.error = error.message || 'Could not load levels.';
         }
     },
     methods: {
         async submitRecord() {
-            this.error = '';
-            this.success = '';
+            this.error = ''; this.success = '';
             const level = this.levels.find(item => item.key === this.form.levelKey);
             if (!level) { this.error = 'Please select a valid level.'; return; }
             if (!Number.isInteger(this.form.percent) || this.form.percent < 1 || this.form.percent > 100) {
@@ -89,9 +103,7 @@ export default {
                 this.form = { username: '', levelKey: '', percent: 100, hz: 240, proofUrl: '', notes: '' };
             } catch (error) {
                 this.error = error.message || 'Submission failed. Please try again.';
-            } finally {
-                this.sending = false;
-            }
+            } finally { this.sending = false; }
         },
     },
 };
