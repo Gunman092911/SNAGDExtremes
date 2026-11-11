@@ -134,6 +134,24 @@ export async function fetchList() {
             }
         }
 
+        // Apply the staff-managed order to every level on the public list.
+        try {
+            const { data: savedOrder, error } = await supabase
+                .from('snagd_list_order')
+                .select('level_key, position')
+                .order('position', { ascending: true });
+            if (error) throw error;
+            if (savedOrder?.length) {
+                const positions = new Map(savedOrder.map(item => [item.level_key, item.position]));
+                levels.sort((a, b) => {
+                    const aPosition = positions.has(a[0]?.path) ? positions.get(a[0].path) : Number.MAX_SAFE_INTEGER;
+                    const bPosition = positions.has(b[0]?.path) ? positions.get(b[0].path) : Number.MAX_SAFE_INTEGER;
+                    return aPosition - bPosition;
+                });
+            }
+        } catch (error) {
+            if (error.code !== '42P01' && error.code !== 'PGRST205') console.warn('Could not load custom level order:', error.message);
+        }
         // Apply staff-managed record order within each level.
         try {
             const { data: recordOrders, error } = await supabase
@@ -163,24 +181,6 @@ export async function fetchList() {
             }
         }
 
-        // Apply the staff-managed order to every level on the public list.
-        try {
-            const { data: savedOrder, error } = await supabase
-                .from('snagd_list_order')
-                .select('level_key, position')
-                .order('position', { ascending: true });
-            if (error) throw error;
-            if (savedOrder?.length) {
-                const positions = new Map(savedOrder.map(item => [item.level_key, item.position]));
-                levels.sort((a, b) => {
-                    const aPosition = positions.has(a[0]?.path) ? positions.get(a[0].path) : Number.MAX_SAFE_INTEGER;
-                    const bPosition = positions.has(b[0]?.path) ? positions.get(b[0].path) : Number.MAX_SAFE_INTEGER;
-                    return aPosition - bPosition;
-                });
-            }
-        } catch (error) {
-            if (error.code !== '42P01' && error.code !== 'PGRST205') console.warn('Could not load custom level order:', error.message);
-        }
         for (const [level] of levels) {
             if (level) level.records.sort((a, b) => Number(b.percent) - Number(a.percent));
         }
