@@ -339,3 +339,6 @@
 @media(prefers-reduced-motion:reduce) {
     .record-sort-card { transition:none; }
 }
+
+.record-sort-move { transition: transform .3s cubic-bezier(.22, 1, .36, 1); }
+@media(prefers-reduced-motion:reduce) { .record-sort-move { transition:none; } }
