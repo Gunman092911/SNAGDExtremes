@@ -27,6 +27,10 @@ export default {
                     <label>Video Proof URL
                         <input v-model.trim="form.proofUrl" type="url" required placeholder="https://youtu.be/...">
                     </label>
+                    <label>Raw Footage URL
+                        <input v-model.trim="form.rawFootageUrl" type="url" required placeholder="https://drive.google.com/...">
+                        <small>Required. Share the original, unedited recording with access set to Anyone with the link.</small>
+                    </label>
                     <label>Extra Information (optional)
                         <textarea v-model.trim="form.notes" maxlength="1000" rows="4" placeholder="Anything the staff should know"></textarea>
                     </label>
@@ -43,7 +47,7 @@ export default {
         sending: false,
         error: '',
         success: '',
-        form: { username: '', levelKey: '', percent: 100, hz: 240, proofUrl: '', notes: '' },
+        form: { username: '', levelKey: '', percent: 100, hz: 240, proofUrl: '', rawFootageUrl: '', notes: '' },
     }),
     async mounted() {
         try {
@@ -95,12 +99,13 @@ export default {
                     percent: this.form.percent,
                     hz: this.form.hz,
                     proof_url: this.form.proofUrl,
+                    raw_footage_url: this.form.rawFootageUrl,
                     notes: this.form.notes || null,
                     status: 'pending',
                 });
                 if (error) throw error;
                 this.success = 'Submission received! List staff will review it.';
-                this.form = { username: '', levelKey: '', percent: 100, hz: 240, proofUrl: '', notes: '' };
+                this.form = { username: '', levelKey: '', percent: 100, hz: 240, proofUrl: '', rawFootageUrl: '', notes: '' };
             } catch (error) {
                 this.error = error.message || 'Submission failed. Please try again.';
             } finally { this.sending = false; }
