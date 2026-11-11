@@ -40,7 +40,7 @@ export default {
                 <div class="level-background-image" aria-hidden="true"></div>
                 <div class="level" v-if="level">
                     <h1>{{ level.name }}</h1>
-                    <LevelAuthors :author="level.author" :creators="level.creators" :verifier="level.verifier"></LevelAuthors>
+                    <LevelAuthors :author="level.author" :creators="level.creators" :verifier="level.verifier" :publisher="level.publisher"></LevelAuthors>
                     <iframe class="video" id="videoframe" :src="video" frameborder="0"></iframe>
                     <ul class="stats">
                         <li>
