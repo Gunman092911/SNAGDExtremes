@@ -1,0 +1,27 @@
+{
+    "id": 69491632,
+    "name": "Crowd Control",
+    "author": "Deadlox",
+    "creators": ["Deadlox & More"],
+    "verifier": "Shepster",
+    "verification": "https://youtu.be/30KhXJI_Qqk?si=Xl9TzCz_f8l8QFFy",
+    "percentToQualify": 100,
+    "password": [],
+    "records": [
+        {
+            "user": "Orbitra",
+            "link": "https://youtu.be/mm6v5RQDedY?si=IYr2SAMkSBu0w9hj",
+            "percent": 100
+        },
+        {
+            "user": "Flight",
+            "link": "https://youtu.be/zcEzsEOIQQg?si=uXT03A9yeQn8f5Bz",
+            "percent": 100
+        },
+        {
+            "user": "MikeyGD",
+            "link": "https://youtu.be/eieUmiVa-O4?si=P4Bb6lZRu8INVIMB",
+            "percent": 100
+        }
+    ]
+}
