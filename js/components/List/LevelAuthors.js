@@ -12,6 +12,10 @@ export default {
             type: String,
             required: true,
         },
+        publisher: {
+            type: String,
+            default: '',
+        },
     },
     template: `
         <div class="level-authors">
@@ -46,7 +50,7 @@ export default {
             </template>
             <div class="type-title-sm">Publisher</div>
             <p class="type-body">
-                <span>{{ author }}</span>
+                <span>{{ publisher || author }}</span>
             </p>
         </div>
     `,
