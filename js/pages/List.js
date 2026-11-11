@@ -99,17 +99,16 @@ export default {
                         </ol>
                     </template>
                     <h3>Submission Requirements</h3>
-                    <p>Every record must be legitimate and completed by you. Hacked, botted, macro-assisted, or otherwise tool-assisted completions are not accepted.</p>
-                    <p>Submit a public video showing the complete, continuous run. The video must be hosted somewhere staff can view it, such as YouTube, Twitch, Vimeo, or Bilibili. Twitch proof must be a highlight.</p>
-                    <p><strong>Raw footage is required for every submission.</strong> Provide the original, unedited and untrimmed recording through a file-sharing service such as Google Drive. Set access to “Anyone with the link”. Do not use YouTube or another compressed video upload as raw footage.</p>
-                    <p>Raw footage must include a separate audio track containing only your audible clicks. Barely audible clicks count as missing clicks. Mobile completions are exempt from the isolated-click-track requirement.</p>
-                    <p>Do not skip the level’s dropdown endscreen after a completion. The entire completion and endscreen must be visible in the recording.</p>
-                    <p>Play the current listed version of the level, or a copy explicitly approved by list staff. Unapproved LDMs, bug-fixed copies, or other edits may cause a record to be rejected. Cosmetic edits are not allowed without staff approval.</p>
-                    <p>Mods and external programs may have additional restrictions. If you use Mega Hack, Geode, or other mods, check the <a href="https://www.pointercrate.com/guidelines/" target="_blank" rel="noopener">Pointercrate guidelines</a> and ask staff if you are unsure.</p>
-                    <p>For Geometry Dash versions before 2.2, the maximum allowed frame rate is 360 FPS and a readable FPS counter must be shown. For version 2.2 and newer, there is no FPS cap.</p>
-                    <p>For 2-player levels, provide a handcam showing both players’ inputs throughout the attempt in the raw footage.</p>
-                    <p>Staff may request additional information or footage before approving a record. Fake, joke, duplicate, or misleading submissions may result in your ability to submit being restricted.</p>
-                    <p>These rules are based on <a href="https://www.pointercrate.com/guidelines/index/" target="_blank" rel="noopener">Pointercrate’s current submission checklist</a> and <a href="https://www.pointercrate.com/guidelines/records/" target="_blank" rel="noopener">record guidelines</a>, adapted for the SNAGD list.</p>
+                    <p>Submit a public video of yourself completing the level in one continuous, uncut run. Accepted video platforms include YouTube, Twitch highlights, Vimeo, and Bilibili. Do not submit a regular Twitch VOD.</p>
+                    <p><strong>Raw footage is required for every record.</strong> Include a shared Google Drive link to the original, unedited recording. Set its sharing access to “Anyone with the link”. YouTube links, private Drive links, compressed files, and livestreams are not valid raw footage.</p>
+                    <p>The raw footage must be at least 30 FPS and have moderate-to-high video quality. It must include an audio track with isolated click sounds (microphone audio and nothing else). Barely audible clicks count as missing clicks and can result in rejection.</p>
+                    <p>Do not skip the dropdown endscreen after completing the level. Skipping it can result in immediate rejection.</p>
+                    <p>Complete the level on its currently accepted version. If you use a copy that is not already approved, including an LDM or bug-fixed copy, ask list staff before submitting it. Cosmetic edits to a level are not allowed without explicit staff approval.</p>
+                    <p>Users of Mega Hack, Geode, and other mods or external programs may have additional requirements. Check the <a href="https://www.pointercrate.com/guidelines/hacks/" target="_blank" rel="noopener">allowed mods and programs guidelines</a> before submitting.</p>
+                    <p>For Geometry Dash versions before 2.2, the maximum allowed frame rate is 360 FPS and a readable in-game FPS counter must be enabled. There is no FPS cap for version 2.2 and newer.</p>
+                    <p>If you record a liveplay (for example, with a phone camera), make sure the game screen is clearly visible. Two-player records must include a handcam showing both players’ inputs.</p>
+                    <p>Only submit your own records. Joke submissions may result in your ability to submit records being removed. Staff may ask for extra proof or clarification before accepting a record.</p>
+                    <p>These requirements are adapted from <a href="https://www.pointercrate.com/guidelines/index/" target="_blank" rel="noopener">Pointercrate’s player checklist</a> and <a href="https://www.pointercrate.com/guidelines/records/" target="_blank" rel="noopener">record submission rules</a>.</p>
                 </div>
             </div>
         </main>
