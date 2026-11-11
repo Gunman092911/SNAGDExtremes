@@ -140,6 +140,10 @@ export async function fetchList() {
         }
 
         // Hide records that staff have removed from the public list.
+        // Legacy records may have no Hz value; treat that as 0 to match
+        // the fallback stored in snagd_removed_records.
+        const normalizeHz = value =>
+            value === null || value === undefined || value === '' ? 0 : Number(value);
         try {
             const { data: removedRecords, error } = await supabase
                 .from('snagd_removed_records')
@@ -152,7 +156,7 @@ export async function fetchList() {
                     item.username.toLowerCase() === String(record.user || '').toLowerCase() &&
                     item.proof_url === record.link &&
                     Number(item.percent) === Number(record.percent) &&
-                    Number(item.hz) === Number(record.hz)
+                    normalizeHz(item.hz) === normalizeHz(record.hz)
                 ));
             }
         } catch (error) {
