@@ -357,3 +357,49 @@ main.dark .page-list .list .level.active button {
     .page-list .list tr,
     .page-list .list .level button { transition: none; }
 }
+
+
+/* Blurred, level-specific artwork behind the selected level details. */
+.page-list .level-container {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border-radius: 1.1rem;
+}
+.page-list .level-background-image {
+    position: absolute;
+    z-index: -1;
+    inset: -24px;
+    background-image: var(--level-background-image);
+    background-position: center;
+    background-size: cover;
+    filter: blur(22px);
+    opacity: .58;
+    transform: scale(1.06);
+    transition: opacity 220ms ease, background-image 220ms ease;
+    pointer-events: none;
+}
+.page-list .level-container::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background: rgba(10, 12, 22, .48);
+    pointer-events: none;
+}
+.page-list .level-container .level {
+    background: rgba(18, 20, 31, .76);
+    color: #fff;
+    border-color: rgba(255,255,255,.16);
+    backdrop-filter: blur(3px);
+}
+.page-list .level-container .level .stats,
+.page-list .level-container .level .records tr:nth-child(odd) {
+    background: rgba(8, 10, 18, .48);
+}
+.page-list .level-container .level .records .user a {
+    color: #fff;
+}
+.page-list .level-container .level .stats .type-title-sm {
+    color: rgba(255,255,255,.7);
+}
