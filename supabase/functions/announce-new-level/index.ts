@@ -49,6 +49,9 @@ Deno.serve(async (req) => {
     const percent = clean(body.percent, 10);
     const hz = clean(body.hz, 10);
     const proofUrl = clean(body.proofUrl, 500);
+    const rank = clean(body.rank, 10);
+    const aboveName = clean(body.aboveName, 100);
+    const belowName = clean(body.belowName, 100);
     const listUrl = "https://list.snagd.workers.dev/";
 
     const events: Record<string, { title: string; description: string; fields: Array<{ name: string; value: string; inline?: boolean }> }> = {
@@ -65,6 +68,15 @@ Deno.serve(async (req) => {
         title: "A Level Request Was Rejected",
         description: "A submitted level request was reviewed by SNAGD staff.",
         fields: [{ name: "Level", value: levelName, inline: true }, { name: "Level ID", value: levelId, inline: true }],
+      },
+      level_moved: {
+        title: "A Level Has Been Moved!",
+        description: "The SNAGD public list has been reordered.",
+        fields: [
+          { name: "Level", value: levelName, inline: true },
+          { name: "New position", value: "#" + rank, inline: true },
+          { name: "Placement", value: "Above " + (aboveName || "the top of the list") + " and below " + (belowName || "the bottom of the list") },
+        ],
       },
       level_removed: {
         title: "A Level Was Removed",
