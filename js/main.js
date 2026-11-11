@@ -3,19 +3,26 @@ import { supabase } from './supabase.js';
 
 const themes = {
     default: { name: 'SNAGD Classic', primary: '#6855d9', background: '#f3f4f9', panel: '#ffffff', text: '#202337', header: '#191b2b' },
-    cataclysm: { name: 'Cataclysm', primary: '#e04432', background: '#171313', panel: '#241b1b', text: '#f7e9e5', header: '#100b0b' },
-    bloodbath: { name: 'Bloodbath', primary: '#c52d25', background: '#211313', panel: '#301b1b', text: '#fff0e8', header: '#130909' },
-    sonicwave: { name: 'Sonic Wave', primary: '#168ee8', background: '#101b2b', panel: '#17283d', text: '#eaf5ff', header: '#091321' },
-    slaughterhouse: { name: 'Slaughterhouse', primary: '#b51e32', background: '#160d13', panel: '#25141d', text: '#ffeef2', header: '#0d070b' },
-    limbo: { name: 'Limbo', primary: '#d5a62e', background: '#191812', panel: '#282517', text: '#fff8dc', header: '#100f0a' },
-    tidalwave: { name: 'Tidal Wave', primary: '#10a9bd', background: '#eaf8fa', panel: '#ffffff', text: '#17343a', header: '#102b32' },
-    xo: { name: 'XO', primary: '#b8b8c5', background: '#15151b', panel: '#22222b', text: '#f2f2f7', header: '#09090e' },
+    cataclysm: { name: 'Copper', primary: '#e04432', background: '#171313', panel: '#241b1b', text: '#f7e9e5', header: '#100b0b' },
+    bloodbath: { name: 'Ruby', primary: '#c52d25', background: '#211313', panel: '#301b1b', text: '#fff0e8', header: '#130909' },
+    sonicwave: { name: 'Sapphire', primary: '#168ee8', background: '#101b2b', panel: '#17283d', text: '#eaf5ff', header: '#091321' },
+    slaughterhouse: { name: 'Garnet', primary: '#b51e32', background: '#160d13', panel: '#25141d', text: '#ffeef2', header: '#0d070b' },
+    limbo: { name: 'Amber', primary: '#d5a62e', background: '#191812', panel: '#282517', text: '#fff8dc', header: '#100f0a' },
+    tidalwave: { name: 'Aqua', primary: '#10a9bd', background: '#eaf8fa', panel: '#ffffff', text: '#17343a', header: '#102b32' },
+    xo: { name: 'Silver', primary: '#b8b8c5', background: '#15151b', panel: '#22222b', text: '#f2f2f7', header: '#09090e' },
 };
 
 const savedTheme = (() => {
     try { return JSON.parse(localStorage.getItem('snagdTheme')) || themes.default; }
     catch { return themes.default; }
 })();
+
+// Rename the built-in presets without changing anyone's saved colors.
+const oldPresetNames = { 'Cataclysm': 'Copper', 'Bloodbath': 'Ruby', 'Sonic Wave': 'Sapphire', 'Slaughterhouse': 'Garnet', 'Limbo': 'Amber', 'Tidal Wave': 'Aqua', 'XO': 'Silver' };
+if (oldPresetNames[savedTheme.name]) {
+    savedTheme.name = oldPresetNames[savedTheme.name];
+    localStorage.setItem('snagdTheme', JSON.stringify(savedTheme));
+}
 
 export const store = Vue.reactive({
     dark: JSON.parse(localStorage.getItem('dark')) || false,
