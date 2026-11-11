@@ -54,3 +54,54 @@
 .nav .nav__actions .nav__cta:hover:not(:active) {
     transform: translateY(-2px);
 }
+
+
+/* Navigation styling */
+.nav {
+    column-gap: .45rem;
+}
+
+.nav .nav__tab {
+    position: relative;
+    padding: 0 .75rem;
+    border-bottom: 0;
+    color: rgba(248,248,255,.72);
+    font-size: .9rem;
+    transition: color 140ms ease, background 140ms ease;
+}
+
+.nav .nav__tab.router-link-active,
+.nav .nav__tab:hover {
+    color: #ffffff;
+    border-color: transparent;
+}
+
+.nav .nav__tab.router-link-active::after {
+    content: "";
+    position: absolute;
+    left: .7rem;
+    right: .7rem;
+    bottom: .55rem;
+    height: 2px;
+    border-radius: 2px;
+    background: #a99cff;
+}
+
+.nav .nav__actions .nav__cta {
+    padding: .72rem 1rem;
+    border-radius: .65rem;
+    background: #7866e8;
+    color: #ffffff;
+    box-shadow: 0 3px 12px rgba(0,0,0,.2);
+    font-size: .86rem;
+    font-weight: 700;
+}
+
+.nav .nav__actions .nav__cta:hover:not(:active) {
+    background: #8979f2;
+    transform: translateY(-1px);
+}
+
+.nav .nav__actions .nav__icon:hover {
+    background-color: rgba(255,255,255,.12);
+}
