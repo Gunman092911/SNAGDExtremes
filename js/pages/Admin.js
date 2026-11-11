@@ -123,6 +123,7 @@ export default {
     `,
     data: () => ({
         email: '', password: '', user: null, submissions: [], levelRequests: [], levels: [], orderedLevels: [],
+        originalOrder: [], movedLevelPaths: [],
         selectedRecordLevel: '',
         loading: false, busy: false, error: '', message: '',
         newLevel: { name: '', id: '', verifier: '', verification: '', percentToQualify: 100 },
@@ -201,21 +202,52 @@ export default {
         async loadOrder() {
             const list = await fetchList();
             this.orderedLevels = (list || []).filter(([level]) => !!level).map(([level]) => ({ ...level, moveTo: null }));
+            this.originalOrder = this.orderedLevels.map(level => level.path);
+            this.movedLevelPaths = [];
             if (!this.selectedRecordLevel && this.orderedLevels.length) this.selectedRecordLevel = this.orderedLevels[0].path;
         },
         moveLevel(fromIndex, toIndex) {
             if (toIndex < 0 || toIndex >= this.orderedLevels.length || fromIndex === toIndex) return;
             const moved = this.orderedLevels.splice(fromIndex, 1)[0];
             this.orderedLevels.splice(toIndex, 0, moved);
+            if (!this.movedLevelPaths.includes(moved.path)) this.movedLevelPaths.push(moved.path);
             this.orderedLevels.forEach(level => { level.moveTo = null; });
         },
         async saveOrder() {
             this.error = ''; this.message = ''; this.busy = true;
             try {
+                const previousPositions = new Map(this.originalOrder.map((path, index) => [path, index]));
                 const rows = this.orderedLevels.map((level, position) => ({ level_key: level.path, position }));
                 const { error } = await supabase.from('snagd_list_order').upsert(rows, { onConflict: 'level_key' });
                 if (error) throw error;
-                this.message = 'The public list order has been saved.';
+
+                const movedLevels = this.movedLevelPaths
+                    .map(path => {
+                        const index = this.orderedLevels.findIndex(level => level.path === path);
+                        if (index < 0 || previousPositions.get(path) === index) return null;
+                        const level = this.orderedLevels[index];
+                        return {
+                            eventType: 'level_moved',
+                            levelName: level.name,
+                            rank: index + 1,
+                            aboveName: index > 0 ? this.orderedLevels[index - 1].name : '',
+                            belowName: index < this.orderedLevels.length - 1 ? this.orderedLevels[index + 1].name : '',
+                        };
+                    })
+                    .filter(Boolean);
+
+                let announcementMessage = '';
+                if (movedLevels.length) {
+                    const results = await Promise.all(movedLevels.map(activity => this.announceActivity(activity)));
+                    const sent = results.filter(Boolean).length;
+                    announcementMessage = sent === results.length
+                        ? ' Discord announcements sent to both servers!'
+                        : ' Some Discord announcements failed; check the webhook setup.';
+                }
+
+                this.originalOrder = this.orderedLevels.map(level => level.path);
+                this.movedLevelPaths = [];
+                this.message = 'The public list order has been saved.' + announcementMessage;
                 this.orderedLevels.forEach(level => { level.moveTo = null; });
             } catch (error) {
                 this.error = error.message || 'Could not save the list order. Check that the list-order SQL setup has been run.';
