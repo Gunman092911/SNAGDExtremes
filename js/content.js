@@ -72,7 +72,7 @@ export async function fetchList() {
                         user: submission.username,
                         link: submission.proof_url,
                         percent: Number(submission.percent),
-                        hz: Number(submission.hz),
+                        hz: Number.isFinite(Number(submission.hz)) ? Number(submission.hz) : 0,
                     });
                 }
             }
