@@ -1,4 +1,5 @@
 import { store } from "../main.js";
+import { supabase } from "../supabase.js";
 import { embed } from "../util.js";
 import { score } from "../score.js";
 import { fetchEditors, fetchList } from "../content.js";
@@ -117,6 +118,7 @@ export default {
         loading: true,
         selected: 0,
         errors: [],
+        removedRecordsChannel: null,
         roleIconMap,
         store
     }),
@@ -164,6 +166,29 @@ export default {
         }
 
         this.loading = false;
+
+        // Keep every already-open public list synchronized with staff removals.
+        this.removedRecordsChannel = supabase
+            .channel('public-list-removed-records')
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'snagd_removed_records',
+            }, async () => {
+                const selectedPath = this.level?.path;
+                const updatedList = await fetchList();
+                if (!updatedList) return;
+                this.list = updatedList;
+                const newSelectedIndex = updatedList.findIndex(([level]) => level?.path === selectedPath);
+                this.selected = newSelectedIndex >= 0 ? newSelectedIndex : 0;
+            })
+            .subscribe();
+    },
+    beforeUnmount() {
+        if (this.removedRecordsChannel) {
+            supabase.removeChannel(this.removedRecordsChannel);
+            this.removedRecordsChannel = null;
+        }
     },
     methods: {
         youtubeThumbnail(url) {
