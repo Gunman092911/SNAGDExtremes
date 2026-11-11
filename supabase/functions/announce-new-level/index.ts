@@ -21,6 +21,7 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
     const webhookUrl = Deno.env.get("DISCORD_WEBHOOK_URL");
+    const secondWebhookUrl = Deno.env.get("DISCORD_WEBHOOK_URL_2");
     if (!supabaseUrl || !anonKey || !webhookUrl) {
       return json({ error: "The announcement function is not fully configured." }, 500);
     }
@@ -107,7 +108,8 @@ Deno.serve(async (req) => {
       return json({ error: "Some required announcement details are missing." }, 400);
     }
 
-    const discordResponse = await fetch(webhookUrl, {
+    const webhookUrls = [webhookUrl, secondWebhookUrl].filter((url): url is string => Boolean(url));
+    const discordResponses = await Promise.all(webhookUrls.map((url) => fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -122,12 +124,13 @@ Deno.serve(async (req) => {
         }],
         allowed_mentions: { parse: [] },
       }),
-    });
+    })));
 
-    if (!discordResponse.ok) {
-      const detail = await discordResponse.text();
-      console.error("Discord webhook failed:", discordResponse.status, detail);
-      return json({ error: "Discord rejected the announcement." }, 502);
+    const failedResponse = discordResponses.find((response) => !response.ok);
+    if (failedResponse) {
+      const detail = await failedResponse.text();
+      console.error("One or more Discord webhooks failed:", failedResponse.status, detail);
+      return json({ error: "One or more Discord servers rejected the announcement." }, 502);
     }
     return json({ success: true });
   } catch (error) {
