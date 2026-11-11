@@ -1,12 +1,69 @@
 import routes from './routes.js';
 import { supabase } from './supabase.js';
 
+const themes = {
+    default: { name: 'SNAGD Classic', primary: '#6855d9', background: '#f3f4f9', panel: '#ffffff', text: '#202337', header: '#191b2b' },
+    cataclysm: { name: 'Cataclysm', primary: '#e04432', background: '#171313', panel: '#241b1b', text: '#f7e9e5', header: '#100b0b' },
+    bloodbath: { name: 'Bloodbath', primary: '#c52d25', background: '#211313', panel: '#301b1b', text: '#fff0e8', header: '#130909' },
+    sonicwave: { name: 'Sonic Wave', primary: '#168ee8', background: '#101b2b', panel: '#17283d', text: '#eaf5ff', header: '#091321' },
+    slaughterhouse: { name: 'Slaughterhouse', primary: '#b51e32', background: '#160d13', panel: '#25141d', text: '#ffeef2', header: '#0d070b' },
+    limbo: { name: 'Limbo', primary: '#d5a62e', background: '#191812', panel: '#282517', text: '#fff8dc', header: '#100f0a' },
+    tidalwave: { name: 'Tidal Wave', primary: '#10a9bd', background: '#eaf8fa', panel: '#ffffff', text: '#17343a', header: '#102b32' },
+    xo: { name: 'XO', primary: '#b8b8c5', background: '#15151b', panel: '#22222b', text: '#f2f2f7', header: '#09090e' },
+};
+
+const savedTheme = (() => {
+    try { return JSON.parse(localStorage.getItem('snagdTheme')) || themes.default; }
+    catch { return themes.default; }
+})();
+
 export const store = Vue.reactive({
     dark: JSON.parse(localStorage.getItem('dark')) || false,
     staff: false,
+    themeOpen: false,
+    themeName: savedTheme.name || 'My Theme',
+    theme: { ...themes.default, ...savedTheme },
+    themeDraft: { ...themes.default },
+    themes,
+    get themeStyle() {
+        const t = this.theme;
+        return {
+            '--color-primary': t.primary,
+            '--color-background': t.background,
+            '--color-on-background': t.text,
+            '--snagd-panel': t.panel,
+            '--snagd-header': t.header,
+            '--snagd-border': this.dark ? '#3a4054' : '#e1e3ee',
+            '--snagd-muted': this.dark ? '#a0a6bc' : '#74798e',
+            '--snagd-control-bg': t.panel,
+            '--snagd-control-border': this.dark ? '#3a4054' : '#d9dbea',
+            '--snagd-control-hover': t.background,
+        };
+    },
     toggleDark() {
         this.dark = !this.dark;
         localStorage.setItem('dark', JSON.stringify(this.dark));
+    },
+    openThemes() {
+        this.themeDraft = { ...this.theme };
+        this.themeName = this.theme.name || 'My Theme';
+        this.themeOpen = !this.themeOpen;
+    },
+    useTheme(key) {
+        this.theme = { ...this.themes[key] };
+        this.themeName = this.theme.name;
+        this.saveTheme();
+    },
+    saveCustomTheme() {
+        this.theme = { ...this.themeDraft, name: this.themeName.trim() || 'My Theme' };
+        this.saveTheme();
+        this.themeOpen = false;
+    },
+    saveTheme() {
+        localStorage.setItem('snagdTheme', JSON.stringify(this.theme));
+    },
+    resetTheme() {
+        this.useTheme('default');
     },
 });
 
