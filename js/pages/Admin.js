@@ -75,6 +75,23 @@ export default {
                     </section>
 
                     <section class="admin-section">
+                        <h2>Change Level Verifier</h2>
+                        <p class="submission-intro">Choose any level on the list and update the username credited as its verifier.</p>
+                        <label>Choose a level
+                            <select v-model="selectedVerifierLevel" @change="loadVerifierDraft">
+                                <option value="">Select a level...</option>
+                                <option v-for="level in orderedLevels" :key="level.path" :value="level.path">{{ level.name }}</option>
+                            </select>
+                        </label>
+                        <div v-if="selectedVerifierLevel" class="submission-form">
+                            <label>Verified by
+                                <input v-model.trim="verifierDraft" maxlength="50" placeholder="Verifier username">
+                            </label>
+                            <button class="btn" @click="saveVerifier" :disabled="busy || !verifierDraft.trim()">Save Verifier</button>
+                        </div>
+                    </section>
+
+                    <section class="admin-section">
                         <h2>Manage Submitted Levels ({{ levels.length }})</h2>
                         <p class="submission-intro">Remove a level you added by mistake. This removes it from the public list and submission dropdown.</p>
                         <p v-if="!levels.length">No staff-added levels yet.</p>
@@ -136,6 +153,8 @@ export default {
         originalOrder: [], movedLevelPaths: [],
         dragIndex: null, dragOverIndex: null,
         selectedRecordLevel: '',
+        selectedVerifierLevel: '',
+        verifierDraft: '',
         loading: false, busy: false, error: '', message: '',
         newLevel: { name: '', id: '', verifier: '', verification: '', percentToQualify: 100 },
     }),
@@ -216,6 +235,12 @@ export default {
             this.originalOrder = this.orderedLevels.map(level => level.path);
             this.movedLevelPaths = [];
             if (!this.selectedRecordLevel && this.orderedLevels.length) this.selectedRecordLevel = this.orderedLevels[0].path;
+            if (!this.selectedVerifierLevel && this.orderedLevels.length) {
+                this.selectedVerifierLevel = this.orderedLevels[0].path;
+                this.loadVerifierDraft();
+            } else if (this.selectedVerifierLevel) {
+                this.loadVerifierDraft();
+            }
         },
         startLevelDrag(index, event) {
             if (this.busy) {
@@ -284,6 +309,30 @@ export default {
                 this.orderedLevels.forEach(level => { level.moveTo = null; });
             } catch (error) {
                 this.error = error.message || 'Could not save the list order. Check that the list-order SQL setup has been run.';
+            } finally { this.busy = false; }
+        },
+        loadVerifierDraft() {
+            const level = this.orderedLevels.find(item => item.path === this.selectedVerifierLevel);
+            this.verifierDraft = level ? (level.verifier || '') : '';
+        },
+        async saveVerifier() {
+            const level = this.orderedLevels.find(item => item.path === this.selectedVerifierLevel);
+            const verifier = this.verifierDraft.trim();
+            if (!level || !verifier) return;
+            this.error = ''; this.message = ''; this.busy = true;
+            try {
+                const { error } = await supabase.from('snagd_verifier_overrides').upsert({
+                    level_key: level.path,
+                    verifier,
+                    updated_at: new Date().toISOString(),
+                }, { onConflict: 'level_key' });
+                if (error) throw error;
+                level.verifier = verifier;
+                const customLevel = this.levels.find(item => item.level_key === level.path);
+                if (customLevel) customLevel.verifier = verifier;
+                this.message = 'Verifier for ' + level.name + ' updated to ' + verifier + '.';
+            } catch (error) {
+                this.error = error.message || 'Could not update the verifier. Check that the verifier override SQL setup has been run.';
             } finally { this.busy = false; }
         },
         async loadLevelRequests() {
