@@ -12,6 +12,8 @@
 .admin-panel { width:min(100%,55rem); }
 .admin-toolbar,.submission-actions { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; }
 .admin-toolbar { justify-content:space-between; }
+.admin-section { padding:1.25rem; border:1px solid #8885; border-radius:.75rem; margin:1rem 0 1.5rem; }
+.admin-section h2 { margin-top:0; }
 .btn-secondary { background:#555; }
 .btn-danger { background:#b3261e; }
 .submission-card { display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:1.25rem; border:1px solid #8885; border-radius:.75rem; }
