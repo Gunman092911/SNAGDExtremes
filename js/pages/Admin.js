@@ -44,29 +44,6 @@ export default {
                         <button class="btn" @click="saveOrder" :disabled="busy || !orderedLevels.length">Save List Order</button>
                     </section>
                     <section class="admin-section">
-                        <h2>Add a Verified Level</h2>
-                        <p class="submission-intro">Add a newly verified level here. It will become available in the record submission dropdown and appear at the bottom of the list.</p>
-                        <form class="submission-form" @submit.prevent="addLevel">
-                            <label>Level Name
-                                <input v-model.trim="newLevel.name" required maxlength="100" placeholder="Level name">
-                            </label>
-                            <label>Geometry Dash Level ID
-                                <input v-model.trim="newLevel.id" inputmode="numeric" pattern="[0-9]+" required placeholder="For example: 12345678">
-                            </label>
-                            <label>Verifier Username
-                                <input v-model.trim="newLevel.verifier" required maxlength="32" placeholder="Verifier's GD username">
-                            </label>
-                            <label>Verification Video URL
-                                <input v-model.trim="newLevel.verification" type="url" required placeholder="https://youtu.be/...">
-                            </label>
-                            <label>Percent to Qualify
-                                <input v-model.number="newLevel.percentToQualify" type="number" min="1" max="100" step="1" required>
-                            </label>
-                            <button class="btn" type="submit" :disabled="busy">{{ busy ? 'Adding...' : 'Add Level' }}</button>
-                        </form>
-                    </section>
-
-                    <section class="admin-section">
                         <h2>Manage Verified Levels ({{ levels.length }})</h2>
                         <p class="submission-intro">Remove a level you added by mistake. This removes it from the public list and submission dropdown.</p>
                         <p v-if="!levels.length">No staff-added levels yet.</p>
