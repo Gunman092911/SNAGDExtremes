@@ -397,3 +397,50 @@ textarea:focus-visible {
         transition: none;
     }
 }
+
+
+/* Theme Studio and Geometry Dash inspired palettes */
+header { background: var(--snagd-header, #191b2b); }
+.theme-trigger {
+    width: 2.65rem; height: 2.65rem; margin-right: .45rem; border: 0;
+    border-radius: .8rem; background: #fff; color: #5141b8; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    box-shadow: 0 3px 12px rgba(0,0,0,.2); transition: transform 140ms ease, box-shadow 140ms ease;
+}
+.theme-trigger:hover { transform: translateY(-2px); box-shadow: 0 5px 16px rgba(0,0,0,.25); }
+.theme-trigger svg { width: 1.45rem; height: 1.45rem; }
+.theme-backdrop {
+    position: fixed; inset: 0; z-index: 20; background: rgba(7,9,18,.58);
+    display: flex; justify-content: flex-end; align-items: stretch; backdrop-filter: blur(5px);
+}
+.theme-panel {
+    box-sizing: border-box; width: min(440px, 100%); height: 100%; overflow-y: auto;
+    padding: 1.5rem; background: var(--color-background); color: var(--color-on-background);
+    box-shadow: -14px 0 40px rgba(0,0,0,.25); border-left: 1px solid var(--snagd-border);
+    animation: theme-slide-in 180ms ease-out;
+}
+@keyframes theme-slide-in { from { transform: translateX(24px); opacity: .7; } to { transform: translateX(0); opacity: 1; } }
+.theme-panel__heading { display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; margin-bottom:1.4rem; }
+.theme-panel__heading h2 { margin:.2rem 0; font-size:1.6rem; }
+.theme-panel__heading p { margin:.25rem 0; color:var(--snagd-muted); font-size:.85rem; }
+.theme-eyebrow { color:var(--color-primary); font-size:.68rem; font-weight:700; letter-spacing:.13em; }
+.theme-close { border:0; background:var(--snagd-panel); color:inherit; width:2.3rem; height:2.3rem; border-radius:.7rem; font-size:1.5rem; cursor:pointer; }
+.theme-panel h3 { font-size:.92rem; margin:1.25rem 0 .75rem; }
+.theme-presets { display:grid; grid-template-columns:1fr 1fr; gap:.55rem; }
+.theme-preset { position:relative; min-height:3.1rem; display:flex; align-items:center; gap:.65rem; padding:.65rem; text-align:left; border:1px solid var(--snagd-border); border-radius:.75rem; background:var(--snagd-panel); color:inherit; cursor:pointer; font-size:.78rem; }
+.theme-preset:hover,.theme-preset.selected { border-color:var(--color-primary); background:var(--snagd-control-hover); }
+.theme-swatch { width:1.2rem; height:1.2rem; flex:none; border-radius:.38rem; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
+.theme-check { margin-left:auto; color:var(--color-primary); font-weight:700; }
+.theme-custom { margin-top:1.35rem; padding:1rem; border:1px solid var(--snagd-border); border-radius:1rem; background:var(--snagd-panel); }
+.theme-name-label { display:grid; gap:.4rem; font-size:.78rem; color:var(--snagd-muted); }
+.theme-name-label input { width:100%; box-sizing:border-box; background:var(--color-background); color:var(--color-on-background); border:1px solid var(--snagd-border); border-radius:.6rem; padding:.65rem; }
+.theme-color-grid { display:grid; grid-template-columns:1fr 1fr; gap:.85rem; margin:1rem 0; }
+.theme-color-grid label { display:flex; align-items:center; justify-content:space-between; gap:.4rem; font-size:.75rem; }
+.theme-color-grid input[type=color] { width:2.5rem; height:2rem; padding:2px; border:1px solid var(--snagd-border); border-radius:.5rem; background:var(--color-background); cursor:pointer; }
+.theme-preview { display:flex; align-items:center; gap:.65rem; padding:.8rem; border:1px solid; border-radius:.7rem; }
+.theme-preview span { width:1rem; height:1rem; border-radius:.3rem; }
+.theme-preview small { margin-left:auto; opacity:.65; font-size:.68rem; }
+.theme-save { width:100%; margin-top:.8rem; padding:.8rem; border:0; border-radius:.65rem; background:var(--color-primary); color:#fff; font-weight:700; cursor:pointer; }
+.theme-reset { margin-top:1rem; padding:.6rem 0; border:0; background:transparent; color:var(--snagd-muted); cursor:pointer; font-size:.78rem; }
+@media(max-width:700px) { .theme-panel { padding:1.1rem; } .theme-presets { grid-template-columns:1fr 1fr; } }
+@media(prefers-reduced-motion:reduce) { .theme-panel { animation:none; } .theme-trigger { transition:none; } }
