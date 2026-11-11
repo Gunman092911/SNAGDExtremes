@@ -35,6 +35,7 @@ export default {
                             </td>
                             <td class="user" :class="{ 'active': selected == i }">
                                 <button @click="selected = i">
+                                    <span v-if="i < 3" class="leaderboard-trophy" :class="{ 'gold': i === 0, 'silver': i === 1, 'bronze': i === 2 }" :aria-label="i === 0 ? '1st place' : (i === 1 ? '2nd place' : '3rd place')" title="Top 3">{{ i === 0 ? '🏆' : '🏆' }}</span>
                                     <span class="type-label-lg">{{ ientry.user }}</span>
                                 </button>
                             </td>
