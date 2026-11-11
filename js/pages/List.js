@@ -99,30 +99,17 @@ export default {
                         </ol>
                     </template>
                     <h3>Submission Requirements</h3>
-                    <p>
-                        Achieved the record without using hacks (however, FPS bypass is allowed, up to 360fps)
-                    </p>
-                    <p>
-                        Achieved the record on the level that is listed on the site - please check the level ID before you submit a record
-                    </p>
-                    <p>
-                        Have either source audio or clicks/taps in the video. Edited audio only does not count
-                    </p>
-                    <p>
-                        The recording must have a previous attempt and entire death animation shown before the completion, unless the completion is on the first attempt. Everyplay records are exempt from this
-                    </p>
-                    <p>
-                        The recording must also show the player hit the endwall, or the completion will be invalidated.
-                    </p>
-                    <p>
-                        Do not use secret routes or bug routes
-                    </p>
-                    <p>
-                        Do not use easy modes, only a record of the unmodified level qualifies
-                    </p>
-                    <p>
-                        Once a level falls onto the Legacy List, we accept records for it for 24 hours after it falls off, then afterwards we never accept records for said level
-                    </p>
+                    <p>Every record must be legitimate and completed by you. Hacked, botted, macro-assisted, or otherwise tool-assisted completions are not accepted.</p>
+                    <p>Submit a public video showing the complete, continuous run. The video must be hosted somewhere staff can view it, such as YouTube, Twitch, Vimeo, or Bilibili. Twitch proof must be a highlight.</p>
+                    <p><strong>Raw footage is required for every submission.</strong> Provide the original, unedited and untrimmed recording through a file-sharing service such as Google Drive. Set access to “Anyone with the link”. Do not use YouTube or another compressed video upload as raw footage.</p>
+                    <p>Raw footage must include a separate audio track containing only your audible clicks. Barely audible clicks count as missing clicks. Mobile completions are exempt from the isolated-click-track requirement.</p>
+                    <p>Do not skip the level’s dropdown endscreen after a completion. The entire completion and endscreen must be visible in the recording.</p>
+                    <p>Play the current listed version of the level, or a copy explicitly approved by list staff. Unapproved LDMs, bug-fixed copies, or other edits may cause a record to be rejected. Cosmetic edits are not allowed without staff approval.</p>
+                    <p>Mods and external programs may have additional restrictions. If you use Mega Hack, Geode, or other mods, check the <a href="https://www.pointercrate.com/guidelines/" target="_blank" rel="noopener">Pointercrate guidelines</a> and ask staff if you are unsure.</p>
+                    <p>For Geometry Dash versions before 2.2, the maximum allowed frame rate is 360 FPS and a readable FPS counter must be shown. For version 2.2 and newer, there is no FPS cap.</p>
+                    <p>For 2-player levels, provide a handcam showing both players’ inputs throughout the attempt in the raw footage.</p>
+                    <p>Staff may request additional information or footage before approving a record. Fake, joke, duplicate, or misleading submissions may result in your ability to submit being restricted.</p>
+                    <p>These rules are based on <a href="https://www.pointercrate.com/guidelines/index/" target="_blank" rel="noopener">Pointercrate’s current submission checklist</a> and <a href="https://www.pointercrate.com/guidelines/records/" target="_blank" rel="noopener">record guidelines</a>, adapted for the SNAGD list.</p>
                 </div>
             </div>
         </main>
