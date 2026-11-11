@@ -33,18 +33,20 @@ export default {
                         <p class="submission-intro">Move levels to change their public ranking. Changes also update leaderboard points.</p>
                         <p v-if="!orderedLevels.length">Loading levels...</p>
                         <article v-for="(level, index) in orderedLevels" :key="level.path" class="submission-card"
-                            draggable="true"
-                            :style="{ cursor: busy ? 'default' : 'grab', opacity: dragIndex === index ? 0.45 : 1, outline: dragOverIndex === index ? '2px dashed var(--color-primary)' : 'none' }"
-                            @dragstart="startLevelDrag(index, $event)"
+                            :style="{ opacity: dragIndex === index ? 0.45 : 1, outline: dragOverIndex === index ? '2px dashed var(--color-primary)' : 'none' }"
                             @dragover.prevent="dragOverIndex = index"
-                            @drop.prevent="dropLevel(index)"
-                            @dragend="endLevelDrag">
-                            <div><span aria-hidden="true" style="margin-right: .5rem; opacity: .65;">⠿</span><strong>#{{ index + 1 }} — {{ level.name }}</strong></div>
-                            <div class="submission-actions">
-                                <button class="btn btn-secondary" @click="moveLevel(index, index - 1)" :disabled="busy || index === 0">Up</button>
-                                <button class="btn btn-secondary" @click="moveLevel(index, index + 1)" :disabled="busy || index === orderedLevels.length - 1">Down</button>
-                                <input v-model.number="level.moveTo" type="number" min="1" :max="orderedLevels.length" aria-label="New rank" style="width: 5rem;">
-                                <button class="btn" @click="moveLevel(index, level.moveTo - 1)" :disabled="busy || !level.moveTo || level.moveTo < 1 || level.moveTo > orderedLevels.length">Move</button>
+                            @drop.prevent="dropLevel(index)">
+                            <div style="display: flex; align-items: center; gap: .75rem;">
+                                <span
+                                    draggable="true"
+                                    role="button"
+                                    tabindex="0"
+                                    aria-label="Hold and drag to reorder level"
+                                    title="Hold and drag to reorder"
+                                    :style="{ cursor: busy ? 'default' : 'grab', opacity: busy ? .4 : .8, fontSize: '1.5rem', lineHeight: 1, userSelect: 'none' }"
+                                    @dragstart="startLevelDrag(index, $event)"
+                                    @dragend="endLevelDrag">⠿</span>
+                                <strong>#{{ index + 1 }} — {{ level.name }}</strong>
                             </div>
                         </article>
                         <button class="btn" @click="saveOrder" :disabled="busy || !orderedLevels.length">Save List Order</button>
