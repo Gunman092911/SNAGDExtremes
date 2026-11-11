@@ -1,5 +1,8 @@
 import routes from './routes.js';
-import { supabase } from './supabase.js';
+import { supabase, authRecoveryReady } from './supabase.js';
+
+// Finish exchanging a password-recovery code before the app checks auth state.
+await authRecoveryReady;
 
 const themes = {
     default: { name: 'SNAGD Classic', primary: '#6855d9', background: '#f3f4f9', panel: '#ffffff', text: '#202337', header: '#191b2b' },
