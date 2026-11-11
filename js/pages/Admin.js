@@ -156,7 +156,8 @@ export default {
             }
             this.user = user;
             store.staff = true;
-            await Promise.all([this.loadSubmissions(), this.loadLevelSubmissions(), this.loadLevels()]);
+            await this.loadLevels();
+            await Promise.all([this.loadSubmissions(), this.loadLevelSubmissions()]);
         },
         async login() {
             this.error = ''; this.message = ''; this.busy = true;
