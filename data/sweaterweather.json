@@ -1,0 +1,27 @@
+{
+    "id": 81148582,
+    "name": "Sweater Weather",
+    "author": "VelYT",
+    "creators": ["VelYT"],
+    "verifier": "Silva",
+    "verification": "https://youtu.be/7K3y2ennDcc",
+    "percentToQualify": "100",
+    "password": [],
+    "records": [
+        {
+        "user": "MikeyGD",
+        "link": "https://youtu.be/_gPJClXsxhU",
+        "percent": 100
+        },
+        {
+        "user": "Flight",
+        "link": "https://youtu.be/-73Wpc8_m1M",
+        "percent": 100
+        },
+        {
+        "user": "Orbitra",
+        "link": "https://youtu.be/3aNsKGCUngM",
+        "percent": 100
+        }
+    ]
+}
