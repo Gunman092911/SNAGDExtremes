@@ -127,8 +127,51 @@
 }
 
 .admin-panel {
-    width: min(100%, 68rem);
-    gap: 1.4rem;
+    width: min(100%, 60rem);
+    gap: 1.1rem;
+    align-items: center;
+}
+
+.admin-panel > * {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.admin-panel > h1 {
+    text-align: center;
+}
+
+.admin-panel > div > h2 {
+    text-align: center;
+}
+
+.admin-toolbar {
+    justify-content: center;
+}
+
+.admin-section {
+    text-align: center;
+}
+
+.admin-section .submission-card {
+    justify-content: center;
+}
+
+.admin-section .submission-actions {
+    justify-content: center;
+}
+
+.admin-panel > div > .submission-card {
+    justify-content: center;
+    text-align: center;
+}
+
+.admin-panel > div > .submission-card > div {
+    text-align: center;
+}
+
+.admin-panel > div > .submission-card .submission-actions {
+    justify-content: center;
 }
 
 .admin-panel > div > h2 {
