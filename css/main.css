@@ -879,3 +879,116 @@ a {
         transition: none;
     }
 }
+
+
+/* Responsive page layouts: keep text columns from being squeezed on narrow screens. */
+@media (max-width: 900px) {
+    header {
+        height: auto;
+        min-height: 4.25rem;
+        flex-wrap: wrap;
+        gap: .35rem;
+        padding-block: .55rem;
+    }
+    header .logo {
+        margin-left: 3.2rem;
+    }
+    header .nav {
+        flex-wrap: wrap;
+        justify-content: center;
+        width: 100%;
+        flex-basis: 100%;
+        row-gap: .25rem;
+    }
+    header .nav .nav__tab {
+        min-height: 2.5rem;
+        padding-inline: .55rem;
+        white-space: normal;
+    }
+    main {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto;
+        height: auto;
+        min-height: 0;
+    }
+    main > div {
+        min-width: 0;
+        overflow-y: visible;
+    }
+    .page-list .list-container,
+    .page-list .level-container,
+    .page-list .meta-container {
+        min-width: 0;
+        padding: 1.25rem;
+    }
+    .page-list .level-container .level {
+        max-width: none;
+        padding-right: 0;
+    }
+    .page-list .meta-container {
+        padding-right: 1.25rem;
+    }
+    .page-leaderboard {
+        height: auto;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto;
+        gap: 1rem;
+        padding: 0 1rem;
+    }
+    .page-leaderboard > div {
+        min-width: 0;
+        overflow-y: visible;
+    }
+    .page-leaderboard .board-container,
+    .page-leaderboard .player-container {
+        grid-row: auto;
+        padding-block: 1rem;
+    }
+    .page-leaderboard .player {
+        padding-right: 0;
+    }
+    .page-roulette {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto;
+        height: auto;
+        min-height: 0;
+    }
+    .page-roulette .levels-container,
+    .page-roulette .toasts-container {
+        grid-column: 1;
+        grid-row: auto;
+        min-width: 0;
+        padding: 1rem;
+        margin: 0;
+        overflow: visible;
+    }
+}
+@media (max-width: 560px) {
+    .page-roulette .levels .level {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .page-roulette .levels .level .video {
+        max-height: 12rem;
+        overflow: hidden;
+    }
+    .page-roulette .levels .level .actions {
+        grid-column: 1;
+        flex-wrap: wrap;
+    }
+    .page-list .level-container .level .stats {
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    .page-list .level-container .level .level-authors {
+        grid-template-columns: minmax(0, 1fr);
+        gap: .4rem;
+    }
+    .page-leaderboard .player .table tr {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: .5rem;
+    }
+    .page-leaderboard .player .table tr td:not(:last-child) {
+        padding-right: 0;
+    }
+}
