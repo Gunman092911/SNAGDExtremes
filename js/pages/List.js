@@ -36,7 +36,8 @@ export default {
                     </tr>
                 </table>
             </div>
-            <div class="level-container">
+            <div class="level-container" :style="levelBackgroundStyle">
+                <div class="level-background-image" aria-hidden="true"></div>
                 <div class="level" v-if="level">
                     <h1>{{ level.name }}</h1>
                     <LevelAuthors :author="level.author" :creators="level.creators" :verifier="level.verifier"></LevelAuthors>
@@ -126,6 +127,10 @@ export default {
         level() {
             return this.list[this.selected][0];
         },
+        levelBackgroundStyle() {
+            const url = this.level?.background_image || this.youtubeThumbnail(this.level?.verification);
+            return url ? { '--level-background-image': 'url("' + url.replace(/["\\\\]/g, '') + '")' } : {};
+        },
         video() {
             if (!this.level.showcase) {
                 return embed(this.level.verification);
@@ -164,6 +169,16 @@ export default {
         this.loading = false;
     },
     methods: {
+        youtubeThumbnail(url) {
+            if (!url) return '';
+            try {
+                const parsed = new URL(url);
+                let id = '';
+                if (parsed.hostname.includes('youtu.be')) id = parsed.pathname.slice(1);
+                else if (parsed.hostname.includes('youtube.com')) id = parsed.searchParams.get('v') || '';
+                return id ? 'https://img.youtube.com/vi/' + id + '/hqdefault.jpg' : '';
+            } catch { return ''; }
+        },
         embed,
         score,
     },
