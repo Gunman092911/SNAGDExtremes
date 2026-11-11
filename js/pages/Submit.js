@@ -134,7 +134,7 @@ export default {
                     level_key: level.key,
                     level_name: level.name,
                     percent: this.form.percent,
-                    hz: 0, // Retained internally for compatibility with the existing database schema.
+                    hz: 1, // Hidden compatibility value; the database requires Hz to be between 1 and 10000.
                     proof_url: this.form.proofUrl,
                     raw_footage_url: this.form.rawFootageUrl,
                     notes: this.form.notes || null,
