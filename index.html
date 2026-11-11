@@ -61,9 +61,6 @@
                     <span class="type-label-lg">Admin</span>
                 </router-link>
                 <div class="nav__actions">
-                    <button class="nav__icon" @click.prevent="store.toggleDark()">
-                        <img :src="store.dark ? './assets/light.svg' : './assets/dark.svg'" alt="Toggle dark mode" />
-                    </button>
                     <a class="nav__icon" href="#"><img src="./assets/discord.svg" alt="Discord Logo" /></a>
                 </div>
             </nav>
@@ -74,6 +71,13 @@
                 <div class="theme-panel__heading">
                     <div><span class="theme-eyebrow">MAKE IT YOURS</span><h2>Theme Studio</h2><p>Pick a Geometry Dash inspired look or build your own.</p></div>
                     <button class="theme-close" @click="store.themeOpen = false" aria-label="Close">×</button>
+                </div>
+                <div class="theme-mode-toggle">
+                    <div><strong>Appearance</strong><small>Darken or lighten your current theme</small></div>
+                    <button class="theme-mode-button" type="button" @click="store.toggleDark()">
+                        <img :src="store.dark ? './assets/light.svg' : './assets/dark.svg'" alt="" />
+                        {{ store.dark ? 'Switch to light mode' : 'Switch to dark mode' }}
+                    </button>
                 </div>
                 <h3>Geometry Dash themes</h3>
                 <div class="theme-presets">
