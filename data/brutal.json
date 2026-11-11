@@ -1,0 +1,27 @@
+{
+    "id": 138356396,
+    "name": "BRUTAL",
+    "author": "TShack",
+    "creators": ["airless, TShack"],
+    "verifier": "Flight",
+    "verification": "https://www.youtube.com/watch?v=igsEvVLfxS8",
+    "percentToQualify": "100",
+    "password": [],
+    "records": [
+        {
+        "user": "Orbitra",
+        "link": "https://www.youtube.com/watch?v=VH6gMoD73W0",
+        "percent": 100
+        },
+        {
+        "user": "MikeyGD",
+        "link": "https://www.youtube.com/watch?v=usnGOMgOsZo",
+        "percent": 100
+        },
+        {
+        "user": "Shepster",
+        "link": "https://www.youtube.com/watch?v=LEAZTv8NrC0",
+        "percent": 100
+        }
+    ]
+}
