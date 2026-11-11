@@ -47,11 +47,11 @@ export default {
     }),
     async mounted() {
         try {
-            const response = await fetch('/data/_list.json');
+            const response = await fetch('./data/_list.json');
             if (!response.ok) throw new Error('Could not load the level list.');
             const keys = await response.json();
             this.levels = (await Promise.all(keys.map(async key => {
-                const result = await fetch(`/data/${key}.json`);
+                const result = await fetch(`./data/${key}.json`);
                 if (!result.ok) return null;
                 const level = await result.json();
                 return { key, name: level.name };
