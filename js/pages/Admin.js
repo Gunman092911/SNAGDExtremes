@@ -90,37 +90,31 @@ export default {
                                 </transition-group>
                                 <button class="btn" @click="saveRecordOrder" :disabled="busy || !recordOrderDirty">Save Record Order</button>
                             </div>
-                            <div class="level-manager-settings">
-                                <div class="level-manager-subsection">
-                                    <h3>Verifier</h3>
-                                    <div class="level-manager-inline">
-                                        <input v-model.trim="verifierDraft" maxlength="50" placeholder="Verifier username">
-                                        <button class="btn" @click="saveVerifier" :disabled="busy || !verifierDraft.trim()">Save</button>
-                                    </div>
+                            <div class="level-settings-launch">
+                                <div>
+                                    <h3>Level settings</h3>
+                                    <p class="submission-intro">Edit the level's information and public details.</p>
                                 </div>
-                                <div class="level-manager-subsection">
-                                    <h3>YouTube Video</h3>
-                                    <label class="level-manager-video-input">
+                                <button class="btn" type="button" @click="toggleLevelSettings">
+                                    {{ levelSettingsOpen ? 'Close Level Settings' : 'Open Level Settings' }}
+                                </button>
+                            </div>
+                            <div v-if="levelSettingsOpen" class="level-settings-editor">
+                                <div class="level-settings-grid">
+                                    <label>Level name<input v-model.trim="levelNameDraft" maxlength="100" placeholder="Level name"></label>
+                                    <label>Geometry Dash ID<input v-model.trim="levelIdDraft" inputmode="numeric" maxlength="20" placeholder="Level ID"></label>
+                                    <label>Creator(s)<input v-model.trim="creatorDraft" maxlength="300" placeholder="Separate multiple creators with commas"></label>
+                                    <label>Publisher<input v-model.trim="publisherDraft" maxlength="100" placeholder="Publisher"></label>
+                                    <label>Verifier<input v-model.trim="verifierDraft" maxlength="50" placeholder="Verifier username"></label>
+                                    <label class="level-settings-wide">Verification video
                                         <input v-model.trim="videoDraft" type="url" maxlength="500" placeholder="https://www.youtube.com/watch?v=...">
                                     </label>
-                                    <button class="btn" @click="saveVideoLink" :disabled="busy || !videoDraft.trim()">Save Video Link</button>
+                                </div>
+                                <div class="level-settings-actions">
+                                    <button class="btn" @click="saveLevelSettings" :disabled="busy">Save Level Settings</button>
                                 </div>
                             </div>
                         </div>
-                    </section>
-
-                    <section v-if="selectedRecordLevel" class="admin-section level-background-manager">
-                        <div class="level-manager-heading">
-                            <div>
-                                <h2>Level Background Image</h2>
-                                <p class="submission-intro">Set the blurred background shown when visitors open this level. Choose a direct image URL, or leave it blank to use the verification video's automatic YouTube thumbnail.</p>
-                            </div>
-                        </div>
-                        <p><strong>Selected level:</strong> {{ orderedLevels.find(level => level.path === selectedRecordLevel)?.name || selectedRecordLevel }}</p>
-                        <label class="level-manager-video-input">
-                            <input v-model.trim="backgroundDraft" type="url" maxlength="1000" placeholder="Paste a direct image URL (https://...)">
-                        </label>
-                        <button class="btn" @click="saveBackground" :disabled="busy">Save Background Image</button>
                     </section>
 
                     <section class="admin-section">
@@ -186,11 +180,15 @@ export default {
         dragIndex: null, dragOverIndex: null,
         recordDragIndex: null, recordDragOverIndex: null, recordOrderDirty: false,
         selectedRecordLevel: '',
+        levelSettingsOpen: false,
+        levelNameDraft: '',
+        levelIdDraft: '',
+        creatorDraft: '',
+        publisherDraft: '',
         selectedVerifierLevel: '',
         verifierDraft: '',
         selectedVideoLevel: '',
         videoDraft: '',
-        backgroundDraft: '',
         loading: false, busy: false, error: '', message: '',
         newLevel: { name: '', id: '', verifier: '', verification: '', percentToQualify: 100 },
     }),
@@ -358,10 +356,23 @@ export default {
             this.selectedVideoLevel = this.selectedRecordLevel;
             this.selectedVerifierLevel = this.selectedRecordLevel;
             this.recordOrderDirty = false;
+            this.levelSettingsOpen = false;
             this.endRecordDrag();
+            this.loadLevelSettingsDrafts();
             this.loadVerifierDraft();
             this.loadVideoDraft();
-            this.loadBackgroundDraft();
+        },
+        toggleLevelSettings() {
+            this.levelSettingsOpen = !this.levelSettingsOpen;
+            if (this.levelSettingsOpen) this.loadLevelSettingsDrafts();
+        },
+        loadLevelSettingsDrafts() {
+            const level = this.orderedLevels.find(item => item.path === this.selectedRecordLevel);
+            if (!level) return;
+            this.levelNameDraft = level.name || '';
+            this.levelIdDraft = String(level.id ?? '');
+            this.creatorDraft = (level.creators?.length ? level.creators : (level.author ? [level.author] : [])).join(', ');
+            this.publisherDraft = level.publisher || '';
         },
         recordKey(record) {
             return JSON.stringify([String(record.user || ''), String(record.link || ''), Number(record.percent), Number(record.hz)]);
@@ -414,37 +425,64 @@ export default {
             const level = this.orderedLevels.find(item => item.path === this.selectedVideoLevel);
             this.videoDraft = level ? (level.verification || '') : '';
         },
-        loadBackgroundDraft() {
-            const level = this.orderedLevels.find(item => item.path === this.selectedRecordLevel);
-            this.backgroundDraft = level ? (level.background_image || '') : '';
-        },
-        async saveBackground() {
+        async saveLevelSettings() {
             const level = this.orderedLevels.find(item => item.path === this.selectedRecordLevel);
             if (!level) return;
-            const imageUrl = this.backgroundDraft.trim();
-            if (imageUrl) {
-                try {
-                    const parsed = new URL(imageUrl);
-                    if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error();
-                } catch {
-                    this.error = 'Enter a valid direct image URL, or leave it blank for the automatic YouTube thumbnail.';
+            const name = this.levelNameDraft.trim();
+            const id = Number(this.levelIdDraft);
+            const creators = this.creatorDraft.split(',').map(value => value.trim()).filter(Boolean);
+            const publisher = this.publisherDraft.trim();
+            const verifier = this.verifierDraft.trim();
+            const verification = this.videoDraft.trim();
+            if (!name) { this.error = 'Level name cannot be empty.'; return; }
+            if (!Number.isSafeInteger(id) || id <= 0) { this.error = 'Enter a valid positive Geometry Dash level ID.'; return; }
+            if (!verifier) { this.error = 'Verifier cannot be empty.'; return; }
+            if (verification) {
+                let parsed;
+                try { parsed = new URL(verification); } catch { this.error = 'Enter a valid YouTube URL.'; return; }
+                if (!['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be', 'www.youtu.be'].includes(parsed.hostname.toLowerCase())) {
+                    this.error = 'Please use a YouTube video URL.';
                     return;
                 }
             }
             this.error = ''; this.message = ''; this.busy = true;
             try {
-                const { error } = await supabase.from('snagd_level_backgrounds').upsert({
+                const { error } = await supabase.from('snagd_level_metadata_overrides').upsert({
                     level_key: level.path,
-                    image_url: imageUrl || null,
+                    name,
+                    level_id: id,
+                    creators,
+                    publisher,
+                    verifier,
+                    verification,
                     updated_at: new Date().toISOString(),
                 }, { onConflict: 'level_key' });
                 if (error) throw error;
-                level.background_image = imageUrl;
-                this.message = imageUrl
-                    ? 'Custom background saved for ' + level.name + '.'
-                    : 'Custom background cleared for ' + level.name + '. The automatic thumbnail will be used.';
+
+                // Keep the existing dedicated overrides in sync for compatibility.
+                const [verifierResult, videoResult] = await Promise.all([
+                    supabase.from('snagd_verifier_overrides').upsert({ level_key: level.path, verifier, updated_at: new Date().toISOString() }, { onConflict: 'level_key' }),
+                    supabase.from('snagd_video_overrides').upsert({ level_key: level.path, verification, updated_at: new Date().toISOString() }, { onConflict: 'level_key' }),
+                ]);
+                if (verifierResult.error) throw verifierResult.error;
+                if (videoResult.error) throw videoResult.error;
+
+                level.name = name;
+                level.id = id;
+                level.author = creators[0] || '';
+                level.creators = creators;
+                level.publisher = publisher;
+                level.verifier = verifier;
+                level.verification = verification;
+                const customLevel = this.levels.find(item => item.level_key === level.path);
+                if (customLevel) {
+                    customLevel.name = name;
+                    customLevel.id = id;
+                    customLevel.verifier = verifier;
+                }
+                this.message = 'Settings for ' + name + ' have been saved.';
             } catch (error) {
-                this.error = error.message || 'Could not save the background. Check that the background SQL setup has been run.';
+                this.error = error.message || 'Could not save level settings. Check that the level-metadata SQL setup has been run.';
             } finally { this.busy = false; }
         },
         async saveVideoLink() {
