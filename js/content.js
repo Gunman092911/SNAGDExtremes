@@ -185,7 +185,28 @@ export async function fetchList() {
                 .select('level_key, record_order');
             if (error) throw error;
             const orderByLevel = new Map((recordOrders || []).map(item => [item.level_key, item.record_order || []]));
-            return levels;
+            for (const [level] of levels) {
+                if (!level || !orderByLevel.has(level.path)) continue;
+                const savedKeys = orderByLevel.get(level.path);
+                const positions = new Map(savedKeys.map((key, index) => [key, index]));
+                const recordKey = record => JSON.stringify([
+                    String(record.user || ''),
+                    String(record.link || ''),
+                    Number(record.percent),
+                    Number(record.hz),
+                ]);
+                level.records.sort((a, b) => {
+                    const aPosition = positions.has(recordKey(a)) ? positions.get(recordKey(a)) : Number.MAX_SAFE_INTEGER;
+                    const bPosition = positions.has(recordKey(b)) ? positions.get(recordKey(b)) : Number.MAX_SAFE_INTEGER;
+                    return aPosition - bPosition;
+                });
+            }
+        } catch (error) {
+            if (error.code !== '42P01' && error.code !== 'PGRST205') {
+                console.warn('Could not load custom record order:', error.message);
+            }
+        }
+        return levels;
     } catch {
         console.error('Failed to load list.');
         return null;
