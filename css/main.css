@@ -616,3 +616,32 @@ header > .theme-trigger {
         left: calc(100% + .35rem);
     }
 }
+
+
+/* Keep the centered navigation above decorative header elements and clickable. */
+header .nav {
+    z-index: 5;
+    pointer-events: auto;
+}
+header .nav .nav__tab {
+    position: relative;
+    z-index: 6;
+    display: flex;
+    align-items: center;
+    min-height: 2.75rem;
+    pointer-events: auto;
+    cursor: pointer;
+}
+header .nav .nav__actions {
+    z-index: 7;
+    pointer-events: auto;
+}
+header .nav .nav__actions a {
+    pointer-events: auto;
+}
+header .logo {
+    pointer-events: none;
+}
+header > .theme-trigger {
+    z-index: 8;
+}
