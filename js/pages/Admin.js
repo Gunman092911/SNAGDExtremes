@@ -1,4 +1,5 @@
 import { supabase } from '../supabase.js';
+import { store } from '../main.js';
 
 export default {
     template: `
@@ -102,11 +103,13 @@ export default {
         async setUser(user) {
             const { data, error } = await supabase.from('snagd_staff').select('user_id').eq('user_id', user.id).maybeSingle();
             if (error || !data) {
+                store.staff = false;
                 await supabase.auth.signOut();
                 this.error = 'This account is not authorized to access the staff dashboard.';
                 return;
             }
             this.user = user;
+            store.staff = true;
             await Promise.all([this.loadSubmissions(), this.loadLevels()]);
         },
         async login() {
@@ -134,7 +137,7 @@ export default {
         },
         async logout() {
             await supabase.auth.signOut();
-            this.user = null; this.submissions = [];
+            this.user = null; store.staff = false; this.submissions = [];
         },
         async loadLevels() {
             const { data, error } = await supabase.from('snagd_levels')
