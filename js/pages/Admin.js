@@ -25,6 +25,30 @@ export default {
                     </div>
                     <p v-if="error" class="submission-error">{{ error }}</p>
                     <p v-if="message" class="submission-success">{{ message }}</p>
+
+                    <section class="admin-section">
+                        <h2>Add a Verified Level</h2>
+                        <p class="submission-intro">Add a newly verified level here. It will become available in the record submission dropdown and appear at the bottom of the list.</p>
+                        <form class="submission-form" @submit.prevent="addLevel">
+                            <label>Level Name
+                                <input v-model.trim="newLevel.name" required maxlength="100" placeholder="Level name">
+                            </label>
+                            <label>Geometry Dash Level ID
+                                <input v-model.trim="newLevel.id" inputmode="numeric" pattern="[0-9]+" required placeholder="For example: 12345678">
+                            </label>
+                            <label>Verifier Username
+                                <input v-model.trim="newLevel.verifier" required maxlength="32" placeholder="Verifier's GD username">
+                            </label>
+                            <label>Verification Video URL
+                                <input v-model.trim="newLevel.verification" type="url" required placeholder="https://youtu.be/...">
+                            </label>
+                            <label>Percent to Qualify
+                                <input v-model.number="newLevel.percentToQualify" type="number" min="1" max="100" step="1" required>
+                            </label>
+                            <button class="btn" type="submit" :disabled="busy">{{ busy ? 'Adding...' : 'Add Level' }}</button>
+                        </form>
+                    </section>
+
                     <h2>Pending Submissions ({{ submissions.length }})</h2>
                     <p v-if="loading">Loading submissions...</p>
                     <p v-else-if="!submissions.length">There are no pending submissions.</p>
@@ -45,7 +69,11 @@ export default {
             </section>
         </main>
     `,
-    data: () => ({ email: '', password: '', user: null, submissions: [], loading: false, busy: false, error: '', message: '' }),
+    data: () => ({
+        email: '', password: '', user: null, submissions: [],
+        loading: false, busy: false, error: '', message: '',
+        newLevel: { name: '', id: '', verifier: '', verification: '', percentToQualify: 100 },
+    }),
     async mounted() {
         const { data } = await supabase.auth.getSession();
         if (data.session) await this.setUser(data.session.user);
@@ -66,9 +94,7 @@ export default {
             await this.loadSubmissions();
         },
         async login() {
-            this.error = '';
-            this.message = '';
-            this.busy = true;
+            this.error = ''; this.message = ''; this.busy = true;
             try {
                 const { data, error } = await supabase.auth.signInWithPassword({ email: this.email, password: this.password });
                 if (error) throw error;
@@ -78,12 +104,8 @@ export default {
             } finally { this.busy = false; }
         },
         async sendPasswordReset() {
-            this.error = '';
-            this.message = '';
-            if (!this.email) {
-                this.error = 'Enter your admin email address first.';
-                return;
-            }
+            this.error = ''; this.message = '';
+            if (!this.email) { this.error = 'Enter your admin email address first.'; return; }
             this.busy = true;
             try {
                 const redirectTo = window.location.origin + window.location.pathname + '?reset-password=1';
@@ -96,8 +118,7 @@ export default {
         },
         async logout() {
             await supabase.auth.signOut();
-            this.user = null;
-            this.submissions = [];
+            this.user = null; this.submissions = [];
         },
         async loadSubmissions() {
             this.loading = true;
@@ -106,10 +127,39 @@ export default {
             else this.submissions = data || [];
             this.loading = false;
         },
-        async review(item, status) {
-            this.error = '';
-            this.message = '';
+        async addLevel() {
+            this.error = ''; this.message = '';
+            const id = Number(this.newLevel.id);
+            if (!Number.isSafeInteger(id) || id <= 0) {
+                this.error = 'Enter a valid positive Geometry Dash level ID.';
+                return;
+            }
+            const levelKey = this.newLevel.name.toLowerCase()
+                .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9]+/g, '').slice(0, 60);
+            if (!levelKey) { this.error = 'The level name must contain letters or numbers.'; return; }
             this.busy = true;
+            try {
+                const { error } = await supabase.from('snagd_levels').insert({
+                    level_key: levelKey,
+                    id,
+                    name: this.newLevel.name,
+                    verifier: this.newLevel.verifier,
+                    verification: this.newLevel.verification,
+                    percent_to_qualify: this.newLevel.percentToQualify,
+                });
+                if (error) {
+                    if (error.code === '23505') throw new Error('A level with that generated ID or name already exists.');
+                    throw error;
+                }
+                this.message = this.newLevel.name + ' was added. It is now available for record submissions and appears at the bottom of the list.';
+                this.newLevel = { name: '', id: '', verifier: '', verification: '', percentToQualify: 100 };
+            } catch (error) {
+                this.error = error.message || 'Could not add the level.';
+            } finally { this.busy = false; }
+        },
+        async review(item, status) {
+            this.error = ''; this.message = ''; this.busy = true;
             try {
                 const { error } = await supabase.from('snagd_submissions').update({ status, reviewed_at: new Date().toISOString() }).eq('id', item.id);
                 if (error) throw error;
