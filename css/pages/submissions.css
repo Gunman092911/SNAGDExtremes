@@ -278,3 +278,28 @@
     border-radius: .6rem;
     box-shadow: none;
 }
+
+
+/* Smooth FLIP animation when admin levels change positions. */
+.level-sort-list {
+    position: relative;
+}
+
+.level-sort-move {
+    transition: transform .34s cubic-bezier(.22, 1, .36, 1);
+}
+
+.level-sort-list .submission-card {
+    transition:
+        transform .34s cubic-bezier(.22, 1, .36, 1),
+        opacity .2s ease,
+        outline-color .2s ease,
+        border-color .18s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .level-sort-move,
+    .level-sort-list .submission-card {
+        transition: none;
+    }
+}
