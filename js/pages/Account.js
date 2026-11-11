@@ -6,7 +6,7 @@ export default {
             <section class="submission-panel account-panel">
                 <h1>SNAGD Account</h1>
                 <div v-if="!user">
-                    <p class="submission-intro">Create an account or sign in to submit records and receive email updates when staff reviews them.</p>
+                    <p class="submission-intro">Create an account or sign in to submit records and check updates from staff.</p>
                     <div class="account-mode">
                         <button class="btn" :class="{ 'btn-secondary': mode !== 'login' }" @click="mode = 'login'">Sign In</button>
                         <button class="btn" :class="{ 'btn-secondary': mode !== 'signup' }" @click="mode = 'signup'">Create Account</button>
@@ -31,10 +31,10 @@ export default {
                         </div>
                         <button class="btn btn-secondary" @click="logout" :disabled="busy">Sign Out</button>
                     </div>
-                    <h2>Your Record Notifications</h2>
-                    <p class="submission-intro">We'll email you whenever staff approves or rejects one of your records.</p>
+                    <h2>🔔 Notifications</h2>
+                    <p class="submission-intro">Updates about your record submissions will appear here when staff accepts or rejects them.</p>
                     <p v-if="loading">Loading your submissions...</p>
-                    <p v-else-if="!notifications.length" class="submission-intro">You haven't submitted any records yet.</p>
+                    <p v-else-if="!notifications.length" class="submission-intro">No notifications yet. Your record updates will appear here.</p>
                     <article v-for="item in notifications" :key="item.id" class="submission-card account-notification">
                         <div>
                             <h3>{{ item.level_name }}</h3>
@@ -44,7 +44,7 @@ export default {
                         <span class="account-status" :class="'status-' + item.status">{{ statusLabel(item.status) }}</span>
                     </article>
                     <p v-if="error" class="submission-error">{{ error }}</p>
-                    <button class="btn btn-secondary" @click="loadNotifications" :disabled="loading">Refresh Status</button>
+                    <button class="btn btn-secondary" @click="loadNotifications" :disabled="loading">Refresh Notifications</button>
                 </div>
             </section>
         </main>
