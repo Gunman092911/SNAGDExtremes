@@ -444,3 +444,5 @@ header { background: var(--snagd-header, #191b2b); }
 .theme-reset { margin-top:1rem; padding:.6rem 0; border:0; background:transparent; color:var(--snagd-muted); cursor:pointer; font-size:.78rem; }
 @media(max-width:700px) { .theme-panel { padding:1.1rem; } .theme-presets { grid-template-columns:1fr 1fr; } }
 @media(prefers-reduced-motion:reduce) { .theme-panel { animation:none; } .theme-trigger { transition:none; } }
+
+header.dark { background: var(--snagd-header, #10121c); }
