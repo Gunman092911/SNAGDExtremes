@@ -716,3 +716,9 @@ main.dark *::-webkit-scrollbar-thumb:hover,
         transition: none;
     }
 }
+
+
+/* Slightly lower the centered SNAGDE wordmark within the header. */
+header .logo {
+    top: .65rem;
+}
