@@ -85,11 +85,11 @@
                     <h3>Create your own theme</h3>
                     <label class="theme-name-label">Theme name<input v-model="store.themeName" maxlength="24" placeholder="My awesome theme"></label>
                     <div class="theme-color-grid">
-                        <label class="theme-color-field">Accent<input class="theme-color-input" type="color" v-model="store.themeDraft.primary" aria-label="Accent color"></label>
-                        <label class="theme-color-field">Background<input class="theme-color-input" type="color" v-model="store.themeDraft.background" aria-label="Background color"></label>
-                        <label class="theme-color-field">Panels<input class="theme-color-input" type="color" v-model="store.themeDraft.panel" aria-label="Panel color"></label>
-                        <label class="theme-color-field">Text<input class="theme-color-input" type="color" v-model="store.themeDraft.text" aria-label="Text color"></label>
-                        <label class="theme-color-field">Header<input class="theme-color-input" type="color" v-model="store.themeDraft.header" aria-label="Header color"></label>
+                        <label >Accent<input type="color" v-model="store.themeDraft.primary" aria-label="Accent color"></label>
+                        <label >Background<input type="color" v-model="store.themeDraft.background" aria-label="Background color"></label>
+                        <label >Panels<input type="color" v-model="store.themeDraft.panel" aria-label="Panel color"></label>
+                        <label >Text<input type="color" v-model="store.themeDraft.text" aria-label="Text color"></label>
+                        <label >Header<input type="color" v-model="store.themeDraft.header" aria-label="Header color"></label>
                     </div>
                     <div class="theme-preview" :style="{ background: store.themeDraft.background, color: store.themeDraft.text, borderColor: store.themeDraft.primary }"><span :style="{ background: store.themeDraft.primary }"></span><strong>{{ store.themeName || 'Your theme' }}</strong><small>Live preview</small></div>
                     <button class="theme-save" @click="store.saveCustomTheme()">Save & apply custom theme</button>
