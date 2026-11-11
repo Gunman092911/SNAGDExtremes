@@ -29,9 +29,9 @@ export default {
                             <p v-else class="type-label-lg">Legacy</p>
                         </td>
                         <td class="level" :class="{ 'active': selected == i, 'error': !level }">
-                            <button @click="selected = i">
+                            <router-link class="level-open-link" :to="\`/level/\${level?.path || err}\`">
                                 <span class="type-label-lg">{{ level?.name || \`Error (\${err}.json)\` }}</span>
-                            </button>
+                            </router-link>
                         </td>
                     </tr>
                 </table>
