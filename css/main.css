@@ -722,3 +722,9 @@ main.dark *::-webkit-scrollbar-thumb:hover,
 header .logo {
     top: .65rem;
 }
+
+
+/* Make the SNAGDE wordmark larger and easier to read. */
+header .logo h2 {
+    font-size: 1.85rem;
+}
