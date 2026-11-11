@@ -6,7 +6,7 @@ export default {
             <section class="submission-panel">
                 <h1>Submit a Record</h1>
                 <p class="submission-intro">Submit your Geometry Dash record for the list staff to review. Your record will not appear until it is approved.</p>
-                <div v-if="!user" class="submission-error">Please <router-link to="/account">sign in or create an account</router-link> before submitting a record. Your account email will receive the review result.</div>
+                <div v-if="!user" class="submission-error">Please <router-link to="/account">sign in or create an account</router-link> before submitting a record. You can check the review result by signing in to your account.</div>
                 <form v-if="user" @submit.prevent="submitRecord" class="submission-form">
                     <label>Geometry Dash Username
                         <input v-model.trim="form.username" required maxlength="32" placeholder="Your in-game username">
