@@ -32,7 +32,7 @@ export default {
                         <td class="level" :class="{ 'active': selected == i, 'error': !level }">
                             <button @click="selected = i">
                                 <span class="type-label-lg">{{ level?.name || \`Error (\${err}.json)\` }}</span>
-                                <small v-if="level?.aredlRank" class="aredl-rank-badge">AREDL #{{ level.aredlRank }}</small>
+                                <small class="aredl-rank-badge">{{ level?.aredlRank ? `AREDL #${level.aredlRank}` : "Unknown" }}</small>
                             </button>
                         </td>
                     </tr>
