@@ -152,14 +152,7 @@ export async function fetchList() {
         } catch (error) {
             if (error.code !== '42P01' && error.code !== 'PGRST205') console.warn('Could not load custom level order:', error.message);
         }
-        // Apply staff-managed record order within each level.
-        try {
-            const { data: recordOrders, error } = await supabase
-                .from('snagd_record_order')
-                .select('level_key, record_order');
-            if (error) throw error;
-            const orderByLevel = new Map((recordOrders || []).map(item => [item.level_key, item.record_order || []]));
-            for (const [level] of levels) {
+        for (const [level] of levels) {
                 if (!level || !orderByLevel.has(level.path)) continue;
                 const savedKeys = orderByLevel.get(level.path);
                 const positions = new Map(savedKeys.map((key, index) => [key, index]));
@@ -184,7 +177,15 @@ export async function fetchList() {
         for (const [level] of levels) {
             if (level) level.records.sort((a, b) => Number(b.percent) - Number(a.percent));
         }
-        return levels;
+
+        // Apply staff-managed record order within each level.
+        try {
+            const { data: recordOrders, error } = await supabase
+                .from('snagd_record_order')
+                .select('level_key, record_order');
+            if (error) throw error;
+            const orderByLevel = new Map((recordOrders || []).map(item => [item.level_key, item.record_order || []]));
+            return levels;
     } catch {
         console.error('Failed to load list.');
         return null;
