@@ -195,3 +195,88 @@ input[type="checkbox"] {
         flex: 1;
     }
 }
+
+
+/* SNAGD visual refresh: a more distinctive, community-built list identity. */
+:root {
+    --color-background: #f3f4f9;
+    --color-on-background: #202337;
+    --color-background-hover: #e9eaf3;
+    --color-on-background-hover: #171a2b;
+    --color-primary: #6855d9;
+    --color-on-primary: #ffffff;
+    --color-error: #c83d55;
+    --color-on-error: #ffffff;
+    --snagd-panel: #ffffff;
+    --snagd-border: #e1e3ee;
+    --snagd-muted: #74798e;
+    --snagd-shadow: 0 8px 28px rgba(29, 32, 58, 0.06);
+}
+
+main.dark {
+    --color-background: #141722;
+    --color-on-background: #eef0fb;
+    --color-background-hover: #252a3a;
+    --color-on-background-hover: #ffffff;
+    --color-primary: #8a79ff;
+    --color-on-primary: #ffffff;
+    --color-error: #e45b70;
+    --color-on-error: #ffffff;
+    --snagd-panel: #1c2130;
+    --snagd-border: #30364a;
+    --snagd-muted: #a0a6bc;
+    --snagd-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+}
+
+body {
+    background: var(--color-background);
+}
+
+header {
+    position: relative;
+    z-index: 2;
+    min-height: 4.25rem;
+    background: #191b2b;
+    color: #f8f8ff;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    box-shadow: 0 3px 16px rgba(15, 17, 34, .14);
+}
+
+header.dark {
+    background: #10121c;
+    color: #f8f8ff;
+}
+
+header .logo h2 {
+    letter-spacing: -1.5px;
+    font-size: 1.55rem;
+}
+
+header .logo p {
+    color: #a9a4d8;
+    font-size: .72rem;
+    line-height: 1.2;
+    margin-bottom: .18rem;
+}
+
+main {
+    background: var(--color-background);
+    color: var(--color-on-background);
+}
+
+a {
+    color: var(--color-primary);
+    text-underline-offset: 3px;
+}
+
+button, input, select, textarea {
+    accent-color: var(--color-primary);
+}
+
+::selection {
+    background: rgba(104, 85, 217, .22);
+}
+
+@media (max-width: 900px) {
+    header { padding-inline: .7rem; }
+}
