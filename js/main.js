@@ -31,15 +31,15 @@ export const store = Vue.reactive({
         const t = baseTheme;
         return {
             '--color-primary': t.primary,
-            '--color-background': this.dark ? '#111521' : t.background,
+            '--color-background': this.dark ? '#07090f' : t.background,
             '--color-on-background': this.dark ? '#edf0f8' : t.text,
-            '--snagd-panel': this.dark ? '#1a2030' : t.panel,
-            '--snagd-header': this.dark ? '#121725' : t.header,
-            '--snagd-border': this.dark ? '#30384b' : '#e5e7ef',
+            '--snagd-panel': this.dark ? '#10131c' : t.panel,
+            '--snagd-header': this.dark ? '#080a11' : t.header,
+            '--snagd-border': this.dark ? '#252b3a' : '#e5e7ef',
             '--snagd-muted': this.dark ? '#a6aec2' : '#737b8e',
-            '--snagd-control-bg': this.dark ? '#171d2b' : '#ffffff',
-            '--snagd-control-border': this.dark ? '#384156' : '#dfe2eb',
-            '--snagd-control-hover': this.dark ? '#222a3c' : '#f7f7fc',
+            '--snagd-control-bg': this.dark ? '#0d1018' : '#ffffff',
+            '--snagd-control-border': this.dark ? '#282e3d' : '#dfe2eb',
+            '--snagd-control-hover': this.dark ? '#181d29' : '#f7f7fc',
         };
     },
     toggleDark() {
