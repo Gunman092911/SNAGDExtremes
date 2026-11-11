@@ -27,3 +27,16 @@ with check (
         where snagd_staff.user_id = auth.uid()
     )
 );
+
+ 
+-- Allow authorized staff to remove staff-added levels.
+drop policy if exists "Staff can delete verified levels" on public.snagd_levels;
+create policy "Staff can delete verified levels"
+on public.snagd_levels for delete
+to authenticated
+using (
+    exists (
+        select 1 from public.snagd_staff
+        where snagd_staff.user_id = auth.uid()
+    )
+);
