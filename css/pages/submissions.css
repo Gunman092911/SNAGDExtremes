@@ -270,3 +270,11 @@
         transition: none;
     }
 }
+
+.admin-panel .submission-form form .btn {
+    min-height: 2.35rem;
+    padding: .55rem .9rem;
+    font-size: .9rem;
+    border-radius: .6rem;
+    box-shadow: none;
+}
