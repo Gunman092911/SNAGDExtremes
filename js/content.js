@@ -80,6 +80,28 @@ export async function fetchList() {
             console.warn('Could not load approved community submissions:', error.message);
         }
 
+        // Hide records that staff have removed from the public list.
+        try {
+            const { data: removedRecords, error } = await supabase
+                .from('snagd_removed_records')
+                .select('level_key, username, proof_url, percent, hz');
+            if (error) throw error;
+            for (const [level] of levels) {
+                if (!level) continue;
+                const removed = (removedRecords || []).filter(item => item.level_key === level.path);
+                level.records = level.records.filter(record => !removed.some(item =>
+                    item.username.toLowerCase() === String(record.user || '').toLowerCase() &&
+                    item.proof_url === record.link &&
+                    Number(item.percent) === Number(record.percent) &&
+                    Number(item.hz) === Number(record.hz)
+                ));
+            }
+        } catch (error) {
+            if (error.code !== '42P01' && error.code !== 'PGRST205') {
+                console.warn('Could not load removed records:', error.message);
+            }
+        }
+
         // Apply the staff-managed order to every level on the public list.
         try {
             const { data: savedOrder, error } = await supabase
