@@ -1,0 +1,33 @@
+{
+    "id": 3979721,
+    "name": "Cataclysm",
+    "author": "Ggb0y",
+    "creators": "-",
+    "verifier": "Orbitra",
+    "verification": "https://youtu.be/iMa8zbFpLSQ",
+    "percentToQualify": "100",
+    "password": [],
+    "records": [
+        {
+        "user": "Shepster",
+        "link": "https://youtu.be/xgshMtjiLxw",
+        "percent": 100
+        },
+        {
+        "user": "Flight",
+        "link": "https://youtu.be/ckDUkJC7yAk",
+        "percent": 100
+        },
+        {
+        "user": "Silva",
+        "link": "https://youtu.be/o--zcj_7EX0",
+        "percent": 100
+        },
+        {
+        "user": "Looney",
+        "link": "https://youtu.be/QmejPCea8M4",
+        "percent": 100
+        }
+    ]
+}
+
