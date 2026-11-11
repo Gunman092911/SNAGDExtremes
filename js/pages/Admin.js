@@ -617,10 +617,25 @@ export default {
                     verifier: request.verifier,
                 });
                 this.message = (status === 'approved'
-                    ? request.level_name + ' was approved and added. Use Reorder Public List to choose its position.'
+                    ? request.level_name + ' was approved and automatically placed using its AREDL rank.'
                     : request.level_name + ' request was rejected.') +
                     (announcementSent ? ' Discord announcement sent!' : ' Discord announcement failed. Check the webhook setup.');
                 await Promise.all([this.loadLevelRequests(), this.loadLevels()]);
+                if (status === 'approved' && Number.isInteger(Number(request.aredl_rank)) && Number(request.aredl_rank) > 0) {
+                    const addedIndex = this.orderedLevels.findIndex(level => level.path === request.level_name.toLowerCase()
+                        .normalize('NFKD').replace(/[\\u0300-\\u036f]/g, '')
+                        .replace(/[^a-z0-9]+/g, '').slice(0, 60));
+                    if (addedIndex >= 0) {
+                        const [addedLevel] = this.orderedLevels.splice(addedIndex, 1);
+                        const targetIndex = Math.min(Number(request.aredl_rank) - 1, this.orderedLevels.length);
+                        this.orderedLevels.splice(targetIndex, 0, addedLevel);
+                        const rows = this.orderedLevels.map((level, position) => ({ level_key: level.path, position }));
+                        const { error: orderError } = await supabase.from('snagd_list_order').upsert(rows, { onConflict: 'level_key' });
+                        if (orderError) throw orderError;
+                        this.originalOrder = this.orderedLevels.map(level => level.path);
+                        this.movedLevelPaths = [];
+                    }
+                }
             } catch (error) {
                 this.error = error.message || 'Could not review this level request.';
             } finally { this.busy = false; }
