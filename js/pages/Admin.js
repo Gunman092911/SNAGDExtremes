@@ -95,8 +95,17 @@ export default {
         const { data } = await supabase.auth.getSession();
         if (data.session) await this.setUser(data.session.user);
         supabase.auth.onAuthStateChange((_event, session) => {
-            this.user = session?.user || null;
-            if (!session) this.submissions = [];
+            if (!session) {
+                this.user = null;
+                store.staff = false;
+                this.submissions = [];
+                return;
+            }
+
+            // Keep the dashboard hidden until the account's staff permission is checked.
+            this.user = null;
+            store.staff = false;
+            Promise.resolve().then(() => this.setUser(session.user));
         });
     },
     methods: {
