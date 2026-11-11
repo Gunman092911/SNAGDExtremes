@@ -54,6 +54,9 @@
                 <router-link class="nav__tab" to="/submit">
                     <span class="type-label-lg">Submit Record</span>
                 </router-link>
+                <router-link v-if="store.staff" class="nav__tab" to="/admin">
+                    <span class="type-label-lg">Admin</span>
+                </router-link>
                 <div class="nav__actions">
                     <button
                         class="nav__icon"
