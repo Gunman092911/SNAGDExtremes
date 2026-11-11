@@ -342,3 +342,93 @@
 
 .record-sort-move { transition: transform .3s cubic-bezier(.22, 1, .36, 1); }
 @media(prefers-reduced-motion:reduce) { .record-sort-move { transition:none; } }
+
+
+/* Refined admin workspace and focused level settings editor. */
+.admin-panel {
+    width: min(100%, 76rem);
+    gap: 1.15rem;
+}
+.admin-panel > h1 {
+    padding-bottom: .85rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-on-background) 12%, transparent);
+}
+.admin-section {
+    border-radius: 1rem;
+    box-shadow: 0 8px 28px rgba(0,0,0,.045);
+}
+.admin-section > h2 {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    font-size: 1.08rem;
+}
+.admin-toolbar {
+    position: sticky;
+    top: .5rem;
+    z-index: 4;
+    backdrop-filter: blur(12px);
+    background: color-mix(in srgb, var(--color-background) 88%, transparent);
+    box-shadow: 0 4px 16px rgba(0,0,0,.045);
+}
+.level-settings-launch {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:1rem;
+    margin-top:1rem;
+    padding:1rem 1.1rem;
+    border:1px solid color-mix(in srgb, var(--color-primary) 24%, transparent);
+    border-radius:.85rem;
+    background:color-mix(in srgb, var(--color-primary) 6%, var(--color-background));
+}
+.level-settings-launch h3 { margin:0 0 .25rem; font-size:1rem; }
+.level-settings-launch .submission-intro { margin:0; font-size:.84rem; }
+.level-settings-editor {
+    margin-top:.8rem;
+    padding:1.15rem;
+    border:1px solid color-mix(in srgb, var(--color-on-background) 12%, transparent);
+    border-radius:.85rem;
+    background:color-mix(in srgb, var(--color-on-background) 2.5%, var(--color-background));
+    animation: admin-settings-in .18s ease-out;
+}
+.level-settings-grid {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:1rem;
+}
+.level-settings-grid label {
+    display:flex;
+    flex-direction:column;
+    gap:.45rem;
+    min-width:0;
+    font-size:.82rem;
+    font-weight:650;
+}
+.level-settings-grid input {
+    box-sizing:border-box;
+    width:100%;
+    min-width:0;
+}
+.level-settings-wide { grid-column:1 / -1; }
+.level-settings-actions {
+    display:flex;
+    justify-content:flex-end;
+    margin-top:1rem;
+    padding-top:1rem;
+    border-top:1px solid color-mix(in srgb, var(--color-on-background) 10%, transparent);
+}
+.level-settings-actions .btn { min-width:11rem; }
+@keyframes admin-settings-in {
+    from { opacity:0; transform:translateY(-5px); }
+    to { opacity:1; transform:translateY(0); }
+}
+@media(max-width:650px) {
+    .level-settings-launch { align-items:stretch; flex-direction:column; }
+    .level-settings-grid { grid-template-columns:1fr; }
+    .level-settings-wide { grid-column:auto; }
+    .level-settings-actions .btn { width:100%; }
+}
+@media(prefers-reduced-motion:reduce) {
+    .level-settings-editor { animation:none; }
+}
