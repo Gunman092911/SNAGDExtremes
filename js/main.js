@@ -4,7 +4,7 @@ import { supabase, authRecoveryReady } from './supabase.js';
 // Finish exchanging a password-recovery code before the app checks auth state.
 await authRecoveryReady;
 
-const baseTheme = { primary: '#6855d9', background: '#f3f4f9', panel: '#ffffff', text: '#202337', header: '#191b2b' };
+const baseTheme = { primary: '#6654d9', background: '#f5f6fa', panel: '#ffffff', text: '#202638', header: '#191d2d' };
 
 // Dark mode is a simple darker version of the site's standard colors.
 function blendHex(color, target, amount) {
@@ -31,15 +31,15 @@ export const store = Vue.reactive({
         const t = baseTheme;
         return {
             '--color-primary': t.primary,
-            '--color-background': this.dark ? blendHex(t.background, '#080a12', 0.78) : t.background,
-            '--color-on-background': this.dark ? blendHex(t.text, '#ffffff', 0.88) : t.text,
-            '--snagd-panel': this.dark ? blendHex(t.panel, '#080a12', 0.76) : t.panel,
-            '--snagd-header': this.dark ? blendHex(t.header, '#05060b', 0.55) : t.header,
-            '--snagd-border': this.dark ? blendHex(t.primary, '#ffffff', 0.22) : '#e1e3ee',
-            '--snagd-muted': this.dark ? blendHex(t.text, '#ffffff', 0.62) : '#74798e',
-            '--snagd-control-bg': this.dark ? blendHex(t.panel, '#080a12', 0.72) : t.panel,
-            '--snagd-control-border': this.dark ? blendHex(t.primary, '#ffffff', 0.18) : '#d9dbea',
-            '--snagd-control-hover': this.dark ? blendHex(t.background, '#ffffff', 0.08) : t.background,
+            '--color-background': this.dark ? '#111521' : t.background,
+            '--color-on-background': this.dark ? '#edf0f8' : t.text,
+            '--snagd-panel': this.dark ? '#1a2030' : t.panel,
+            '--snagd-header': this.dark ? '#121725' : t.header,
+            '--snagd-border': this.dark ? '#30384b' : '#e5e7ef',
+            '--snagd-muted': this.dark ? '#a6aec2' : '#737b8e',
+            '--snagd-control-bg': this.dark ? '#171d2b' : '#ffffff',
+            '--snagd-control-border': this.dark ? '#384156' : '#dfe2eb',
+            '--snagd-control-hover': this.dark ? '#222a3c' : '#f7f7fc',
         };
     },
     toggleDark() {
