@@ -155,6 +155,22 @@ export async function fetchList() {
         for (const [level] of levels) {
             if (level) level.records.sort((a, b) => Number(b.percent) - Number(a.percent));
         }
+        // Apply optional staff-selected level background screenshots.
+        try {
+            const { data: backgrounds, error } = await supabase
+                .from('snagd_level_backgrounds')
+                .select('level_key, image_url');
+            if (error) throw error;
+            const backgroundByLevel = new Map((backgrounds || []).map(item => [item.level_key, item.image_url || '']));
+            for (const [level] of levels) {
+                if (level) level.background_image = backgroundByLevel.get(level.path) || '';
+            }
+        } catch (error) {
+            if (error.code !== '42P01' && error.code !== 'PGRST205') {
+                console.warn('Could not load level background overrides:', error.message);
+            }
+        }
+
 
         // Apply staff-managed record order within each level.
         try {
