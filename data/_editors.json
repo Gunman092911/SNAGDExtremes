@@ -1,7 +1,8 @@
 [
     {
         "role": "owner",
-        "name": "Orbitra"
+        "name": "Orbitra",
+        "link": "https://www.youtube.com/@OrbitraGD"
     },
     {
         "role": "admin",
@@ -12,11 +13,6 @@
         "role": "admin",
         "name": "Shepster",
         "link": "https://www.youtube.com/@ShepsterGD"
-    },
-    {
-        "role": "admin",
-        "name": "Orbitra",
-        "link": "https://www.youtube.com/@OrbitraGD"
     },
     {
         "role": "admin",
