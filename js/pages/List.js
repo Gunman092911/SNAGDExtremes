@@ -203,23 +203,47 @@ export default {
     methods: {
         async refreshAredlRanks() {
             try {
-                const response = await fetch('https://api.aredl.net/v2/api/levels');
+                const response = await fetch('https://api.aredl.net/v2/api/levels', {
+                    headers: { Accept: 'application/json' },
+                });
                 if (!response.ok) throw new Error('AREDL API returned ' + response.status);
                 const payload = await response.json();
-                const aredlLevels = Array.isArray(payload) ? payload : (payload.data || payload.levels || []);
-                const rankById = new Map();
-                for (const item of aredlLevels) {
-                    const id = item.level_id ?? item.gd_level_id ?? item.id;
-                    const rank = Number(item.position ?? item.rank);
-                    if (id !== null && id !== undefined && Number.isFinite(rank) && rank > 0) {
-                        rankById.set(String(id), rank);
-                    }
+                const aredlLevels = Array.isArray(payload)
+                    ? payload
+                    : (payload.data || payload.levels || payload.items || payload.results || []);
+                if (!Array.isArray(aredlLevels) || aredlLevels.length === 0) {
+                    throw new Error('AREDL API returned an unexpected or empty level list');
                 }
+
+                const rankById = new Map();
+                const rankByName = new Map();
+                const normalizeName = value => String(value || '')
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]/g, '');
+
+                for (const item of aredlLevels) {
+                    // AREDL's "id" is its internal UUID; "level_id" is the Geometry Dash ID.
+                    const gameId = item.level_id ?? item.gd_level_id ?? item.gd_id ?? item.levelId ?? item.id;
+                    const rank = Number(item.position ?? item.rank ?? item.placement);
+                    if (!Number.isFinite(rank) || rank <= 0) continue;
+
+                    if (gameId !== null && gameId !== undefined) {
+                        rankById.set(String(gameId), rank);
+                    }
+                    const name = normalizeName(item.name ?? item.title ?? item.level_name);
+                    if (name) rankByName.set(name, rank);
+                }
+
+                let matched = 0;
                 this.list = this.list.map(([level, err]) => {
                     if (!level) return [level, err];
-                    const rank = rankById.get(String(level.id));
-                    return [{ ...level, aredlRank: rank ?? null }, err];
+                    const byId = rankById.get(String(level.id));
+                    const byName = rankByName.get(normalizeName(level.name));
+                    const rank = byId ?? byName ?? null;
+                    if (rank !== null) matched++;
+                    return [{ ...level, aredlRank: rank }, err];
                 });
+                console.info('AREDL placements loaded:', matched, 'of', this.list.length, 'SNAGD levels matched.');
             } catch (error) {
                 console.warn('Could not refresh AREDL placements:', error);
             }
