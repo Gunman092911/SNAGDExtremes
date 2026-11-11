@@ -728,3 +728,154 @@ header .logo {
 header .logo h2 {
     font-size: 1.85rem;
 }
+
+
+/* SNAGD professional light/dark theme polish */
+:root {
+    --snagd-panel: #ffffff;
+    --snagd-border: #e5e7ef;
+    --snagd-muted: #737b8e;
+    --snagd-control-bg: #ffffff;
+    --snagd-control-border: #dfe2eb;
+    --snagd-control-hover: #f7f7fc;
+    --snagd-shadow: 0 5px 20px rgba(25, 31, 55, .055);
+    --snagd-accent-soft: rgba(102, 84, 217, .08);
+    --snagd-accent-border: rgba(102, 84, 217, .28);
+}
+
+main.dark {
+    --snagd-panel: #1a2030;
+    --snagd-border: #30384b;
+    --snagd-muted: #a6aec2;
+    --snagd-control-bg: #171d2b;
+    --snagd-control-border: #384156;
+    --snagd-control-hover: #222a3c;
+    --snagd-shadow: 0 8px 26px rgba(0, 0, 0, .2);
+    --snagd-accent-soft: rgba(145, 130, 255, .13);
+    --snagd-accent-border: rgba(145, 130, 255, .38);
+}
+
+body {
+    background: var(--color-background);
+    color: var(--color-on-background);
+    transition: background-color 180ms ease, color 180ms ease;
+}
+
+header {
+    background: var(--snagd-header, #191b2b);
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    box-shadow: 0 2px 12px rgba(18, 22, 40, .12);
+    transition: background-color 180ms ease, border-color 180ms ease;
+}
+
+main {
+    background: var(--color-background);
+    color: var(--color-on-background);
+    transition: background-color 180ms ease, color 180ms ease;
+}
+
+/* Give level rows a deliberate, tidy list treatment. */
+.page-list .list .level button {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: .7rem;
+    padding: .82rem .95rem;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.page-list .list .level button:hover {
+    background: var(--snagd-panel);
+    border-color: var(--snagd-border);
+    box-shadow: var(--snagd-shadow);
+    transform: translateX(2px);
+}
+
+.page-list .list .level.active button {
+    background: var(--snagd-accent-soft);
+    border-color: var(--snagd-accent-border);
+    color: var(--color-primary);
+    font-weight: 700;
+    box-shadow: none;
+}
+
+main.dark .page-list .list .level.active button {
+    color: #c1b8ff;
+}
+
+.page-list .list .rank {
+    color: var(--snagd-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Shared surfaces for forms, cards, and detail panels. */
+main .level,
+main .meta,
+main .level-container,
+main .meta-container {
+    color: var(--color-on-background);
+}
+
+main .records,
+main .stats,
+main .level-authors {
+    border-color: var(--snagd-border);
+}
+
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+    background: var(--snagd-control-bg);
+    border-color: var(--snagd-control-border);
+    color: var(--color-on-background);
+    box-shadow: none;
+}
+
+button, .btn {
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+
+.btn {
+    box-shadow: 0 2px 7px rgba(70, 57, 160, .14);
+}
+
+.btn:disabled {
+    box-shadow: none;
+}
+
+.theme-trigger {
+    background: rgba(255,255,255,.1);
+    color: #ffffff;
+    border: 1px solid rgba(255,255,255,.18);
+    box-shadow: none;
+}
+
+.theme-trigger:hover {
+    background: rgba(255,255,255,.18);
+    box-shadow: 0 4px 12px rgba(0,0,0,.16);
+}
+
+.nav .nav__tab {
+    border-radius: .55rem;
+}
+
+.nav .nav__tab:hover {
+    background: rgba(255,255,255,.07);
+}
+
+.nav .nav__tab.router-link-active::after {
+    bottom: .42rem;
+    height: 2px;
+    background: #b7adff;
+}
+
+a {
+    text-underline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body, header, main,
+    .page-list .list .level button,
+    button, .btn {
+        transition: none;
+    }
+}
