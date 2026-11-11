@@ -6,7 +6,8 @@ export default {
             <section class="submission-panel">
                 <h1>Submit a Record</h1>
                 <p class="submission-intro">Submit your Geometry Dash record for the list staff to review. Your record will not appear until it is approved.</p>
-                <form @submit.prevent="submitRecord" class="submission-form">
+                <div v-if="!user" class="submission-error">Please <router-link to="/account">sign in or create an account</router-link> before submitting a record. Your account email will receive the review result.</div>
+                <form v-if="user" @submit.prevent="submitRecord" class="submission-form">
                     <label>Geometry Dash Username
                         <input v-model.trim="form.username" required maxlength="32" placeholder="Your in-game username">
                     </label>
@@ -61,6 +62,7 @@ export default {
     `,
     data: () => ({
         levels: [],
+        user: null,
         sending: false,
         showLevelRequest: false,
         requestSending: false,
@@ -70,6 +72,9 @@ export default {
         form: { username: '', levelKey: '', percent: 100, hz: 240, proofUrl: '', rawFootageUrl: '', notes: '' },
     }),
     async mounted() {
+        const { data: sessionData } = await supabase.auth.getSession();
+        this.user = sessionData.session?.user || null;
+        supabase.auth.onAuthStateChange((_event, session) => { this.user = session?.user || null; });
         try {
             const response = await fetch('./data/_list.json');
             if (!response.ok) throw new Error('Could not load the level list.');
@@ -138,6 +143,7 @@ export default {
             this.sending = true;
             try {
                 const { error } = await supabase.from('snagd_submissions').insert({
+                    user_id: this.user.id,
                     username: this.form.username,
                     level_key: level.key,
                     level_name: level.name,
