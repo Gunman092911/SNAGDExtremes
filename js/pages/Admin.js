@@ -47,7 +47,7 @@ export default {
                                     :style="{ cursor: busy ? 'default' : 'grab', opacity: busy ? .4 : .8, fontSize: '1.5rem', lineHeight: 1, userSelect: 'none' }"
                                     @dragstart="startLevelDrag(index, $event)"
                                     @dragend="endLevelDrag">⠿</span>
-                                <strong>#{{ index + 1 }} — {{ level.name }}</strong>
+                                <strong>#{{ index + 1 }} — {{ level.name }}</strong><small class="aredl-rank-badge">{{ level.aredlRank ? `AREDL #${level.aredlRank}` : "Unknown" }}</small>
                             </div>
                         </article>
                         </transition-group>
@@ -63,7 +63,7 @@ export default {
                         <label>Choose a level
                             <select v-model="selectedRecordLevel" @change="loadLevelManagementDrafts">
                                 <option value="">Select a level...</option>
-                                <option v-for="level in orderedLevels" :key="level.path" :value="level.path">{{ level.name }}</option>
+                                <option v-for="level in orderedLevels" :key="level.path" :value="level.path">{{ level.name }} — {{ level.aredlRank ? `AREDL #${level.aredlRank}` : "Unknown" }}</option>
                             </select>
                         </label>
                         <div v-if="selectedRecordLevel" class="level-manager-content">
@@ -268,11 +268,44 @@ export default {
         },
         async loadLevels() {
             await this.loadOrder();
+            await this.refreshAredlRanks();
             const { data, error } = await supabase.from('snagd_levels')
                 .select('level_key, id, name, verifier')
                 .order('created_at', { ascending: true });
             if (error) this.error = error.message;
             else this.levels = data || [];
+        },
+        async refreshAredlRanks() {
+            try {
+                const response = await fetch('https://api.aredl.net/v2/api/aredl/levels', {
+                    headers: { Accept: 'application/json' },
+                });
+                if (!response.ok) throw new Error('AREDL API returned ' + response.status);
+                const payload = await response.json();
+                const placements = Array.isArray(payload)
+                    ? payload
+                    : (payload.data || payload.levels || payload.items || payload.results || []);
+                if (!Array.isArray(placements) || !placements.length) {
+                    throw new Error('AREDL API returned an unexpected or empty level list');
+                }
+                const rankById = new Map();
+                const rankByName = new Map();
+                const normalizeName = value => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                for (const item of placements) {
+                    const gameId = item.level_id ?? item.gd_level_id ?? item.gd_id ?? item.levelId;
+                    const rank = Number(item.position ?? item.rank ?? item.placement);
+                    if (!Number.isFinite(rank) || rank <= 0) continue;
+                    if (gameId !== null && gameId !== undefined) rankById.set(String(gameId), rank);
+                    const name = normalizeName(item.name ?? item.title ?? item.level_name);
+                    if (name) rankByName.set(name, rank);
+                }
+                this.orderedLevels = this.orderedLevels.map(level => ({
+                    ...level,
+                    aredlRank: rankById.get(String(level.id)) ?? rankByName.get(normalizeName(level.name)) ?? null,
+                }));
+            } catch (error) {
+                console.warn('Could not refresh admin AREDL placements:', error);
+            }
         },
         async loadOrder() {
             const list = await fetchList();
