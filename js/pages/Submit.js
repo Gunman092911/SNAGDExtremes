@@ -16,14 +16,9 @@ export default {
                             <option v-for="level in levels" :key="level.key" :value="level.key">{{ level.name }}</option>
                         </select>
                     </label>
-                    <div class="submission-row">
-                        <label>Progress (%)
-                            <input v-model.number="form.percent" type="number" min="1" max="100" step="1" required>
-                        </label>
-                        <label>Refresh Rate (Hz)
-                            <input v-model.number="form.hz" type="number" min="1" max="10000" required>
-                        </label>
-                    </div>
+                    <label>Progress (%)
+                        <input v-model.number="form.percent" type="number" min="1" max="100" step="1" required>
+                    </label>
                     <label>Video Proof URL
                         <input v-model.trim="form.proofUrl" type="url" required placeholder="https://youtu.be/...">
                     </label>
@@ -67,7 +62,7 @@ export default {
         levelRequest: { name: '', id: '', verifier: '', verification: '', aredlRank: null },
         error: '',
         success: '',
-        form: { username: '', levelKey: '', percent: 100, hz: 240, proofUrl: '', rawFootageUrl: '', notes: '' },
+        form: { username: '', levelKey: '', percent: 100, proofUrl: '', rawFootageUrl: '', notes: '' },
     }),
     async mounted() {
         try {
@@ -132,9 +127,6 @@ export default {
             if (!Number.isInteger(this.form.percent) || this.form.percent < 1 || this.form.percent > 100) {
                 this.error = 'Progress must be a whole number from 1 to 100.'; return;
             }
-            if (!Number.isInteger(this.form.hz) || this.form.hz < 1) {
-                this.error = 'Refresh rate must be a positive whole number.'; return;
-            }
             this.sending = true;
             try {
                 const { error } = await supabase.from('snagd_submissions').insert({
@@ -142,7 +134,7 @@ export default {
                     level_key: level.key,
                     level_name: level.name,
                     percent: this.form.percent,
-                    hz: this.form.hz,
+                    hz: 0, // Retained internally for compatibility with the existing database schema.
                     proof_url: this.form.proofUrl,
                     raw_footage_url: this.form.rawFootageUrl,
                     notes: this.form.notes || null,
@@ -150,7 +142,7 @@ export default {
                 });
                 if (error) throw error;
                 this.success = 'Submission received! List staff will review it.';
-                this.form = { username: '', levelKey: '', percent: 100, hz: 240, proofUrl: '', rawFootageUrl: '', notes: '' };
+                this.form = { username: '', levelKey: '', percent: 100, proofUrl: '', rawFootageUrl: '', notes: '' };
             } catch (error) {
                 this.error = error.message || 'Submission failed. Please try again.';
             } finally { this.sending = false; }
