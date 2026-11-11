@@ -77,10 +77,15 @@
 }
 
 .nav .nav__tab.router-link-active::after {
-    display: none;
-    content: none;
+    content: "";
+    position: absolute;
+    left: .7rem;
+    right: .7rem;
+    bottom: .55rem;
+    height: 2px;
+    border-radius: 2px;
+    background: #a99cff;
 }
-
 
 .nav .nav__actions .nav__cta {
     padding: .72rem 1rem;
@@ -99,26 +104,4 @@
 
 .nav .nav__actions .nav__icon:hover {
     background-color: rgba(255,255,255,.12);
-}
-
-
-/* Definitively remove all active/hover decoration from the main header links. */
-header .nav .nav__tab,
-header .nav .nav__tab:hover,
-header .nav .nav__tab.router-link-active,
-header .nav .nav__tab.router-link-active:hover {
-    border: 0 !important;
-    border-bottom: 0 !important;
-    text-decoration: none !important;
-    background-image: none !important;
-}
-header .nav .nav__tab::before,
-header .nav .nav__tab::after,
-header .nav .nav__tab.router-link-active::before,
-header .nav .nav__tab.router-link-active::after {
-    display: none !important;
-    content: none !important;
-}
-header .nav .nav__tab span {
-    text-decoration: none !important;
 }
