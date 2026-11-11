@@ -1,4 +1,4 @@
-import { supabase } from '../supabase.js';
+import { supabase, authRecoveryReady } from '../supabase.js';
 
 export default {
     template: `
@@ -20,10 +20,12 @@ export default {
     `,
     data: () => ({ password: '', confirmPassword: '', checkingSession: true, hasRecoverySession: false, busy: false, error: '', message: '' }),
     async mounted() {
+        const recoveryError = await authRecoveryReady;
         const { data, error } = await supabase.auth.getSession();
         this.checkingSession = false;
         this.hasRecoverySession = !!data.session;
-        if (error) this.error = error.message;
+        if (recoveryError) this.error = `Could not verify the reset link: ${recoveryError}`;
+        else if (error) this.error = error.message;
     },
     methods: {
         async updatePassword() {
