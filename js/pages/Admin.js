@@ -98,14 +98,6 @@ export default {
                                         <button class="btn" @click="saveVerifier" :disabled="busy || !verifierDraft.trim()">Save</button>
                                     </div>
                                 </div>
-                            <div class="level-manager-subsection">
-                                <h3>Level Background Screenshot</h3>
-                                <p class="submission-intro">Paste a direct image URL for a custom screenshot. Leave it blank to use the verification video's automatic YouTube thumbnail.</p>
-                                <label class="level-manager-video-input">
-                                    <input v-model.trim="backgroundDraft" type="url" maxlength="1000" placeholder="https://example.com/level-screenshot.jpg">
-                                </label>
-                                <button class="btn" @click="saveBackground" :disabled="busy">Save Background</button>
-                            </div>
                                 <div class="level-manager-subsection">
                                     <h3>YouTube Video</h3>
                                     <label class="level-manager-video-input">
@@ -115,6 +107,20 @@ export default {
                                 </div>
                             </div>
                         </div>
+                    </section>
+
+                    <section v-if="selectedRecordLevel" class="admin-section level-background-manager">
+                        <div class="level-manager-heading">
+                            <div>
+                                <h2>Level Background Image</h2>
+                                <p class="submission-intro">Set the blurred background shown when visitors open this level. Choose a direct image URL, or leave it blank to use the verification video's automatic YouTube thumbnail.</p>
+                            </div>
+                        </div>
+                        <p><strong>Selected level:</strong> {{ orderedLevels.find(level => level.path === selectedRecordLevel)?.name || selectedRecordLevel }}</p>
+                        <label class="level-manager-video-input">
+                            <input v-model.trim="backgroundDraft" type="url" maxlength="1000" placeholder="Paste a direct image URL (https://...)">
+                        </label>
+                        <button class="btn" @click="saveBackground" :disabled="busy">Save Background Image</button>
                     </section>
 
                     <section class="admin-section">
