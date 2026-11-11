@@ -489,3 +489,63 @@ header > .theme-trigger:focus-visible {
         transition: none;
     }
 }
+
+
+/* Appearance control lives inside Theme Studio rather than the main navigation. */
+.theme-mode-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0 0 1.2rem;
+    padding: .9rem;
+    border: 1px solid var(--snagd-border);
+    border-radius: .85rem;
+    background: var(--snagd-panel);
+}
+.theme-mode-toggle > div {
+    display: grid;
+    gap: .2rem;
+    min-width: 0;
+}
+.theme-mode-toggle strong {
+    font-size: .84rem;
+}
+.theme-mode-toggle small {
+    color: var(--snagd-muted);
+    font-size: .72rem;
+}
+.theme-mode-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .45rem;
+    flex: none;
+    padding: .6rem .75rem;
+    border: 1px solid var(--snagd-control-border);
+    border-radius: .65rem;
+    background: var(--snagd-control-bg);
+    color: var(--color-on-background);
+    cursor: pointer;
+    font-size: .75rem;
+    font-weight: 700;
+    transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+.theme-mode-button:hover {
+    background: var(--snagd-control-hover);
+    border-color: var(--color-primary);
+    transform: translateY(-1px);
+}
+.theme-mode-button img {
+    width: 1rem;
+    height: 1rem;
+}
+@media (max-width: 420px) {
+    .theme-mode-toggle {
+        align-items: stretch;
+        flex-direction: column;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .theme-mode-button { transition: none; }
+}
