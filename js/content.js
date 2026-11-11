@@ -2,9 +2,6 @@ import { supabase } from './supabase.js';
 
 import { round, score } from './score.js';
 
-/**
- * Path to directory containing `_list.json` and all levels
- */
 const dir = './data';
 
 export async function fetchList() {
@@ -17,11 +14,7 @@ export async function fetchList() {
                 try {
                     const level = await levelResult.json();
                     return [
-                        {
-                            ...level,
-                            path,
-                            records: [...(level.records || [])],
-                        },
+                        { ...level, path, records: [...(level.records || [])] },
                         null,
                     ];
                 } catch {
@@ -31,7 +24,34 @@ export async function fetchList() {
             }),
         );
 
-        // Approved community submissions are added to the public list.
+        // Add newly verified levels created by authorized staff.
+        try {
+            const { data, error } = await supabase.from('snagd_levels')
+                .select('level_key, id, name, verifier, verification, percent_to_qualify')
+                .order('created_at', { ascending: true });
+            if (error) throw error;
+            for (const item of data || []) {
+                if (levels.some(([level]) => level?.path === item.level_key)) continue;
+                levels.push([{
+                    id: item.id,
+                    name: item.name,
+                    author: '',
+                    creators: [],
+                    verifier: item.verifier,
+                    verification: item.verification,
+                    percentToQualify: item.percent_to_qualify,
+                    password: [],
+                    records: [],
+                    path: item.level_key,
+                }, null]);
+            }
+        } catch (error) {
+            if (error.code !== '42P01' && error.code !== 'PGRST205') {
+                console.warn('Could not load newly added levels:', error.message);
+            }
+        }
+
+        // Approved community submissions are added to their matching level.
         try {
             const { data, error } = await supabase
                 .from('snagd_submissions')
@@ -65,7 +85,7 @@ export async function fetchList() {
         }
         return levels;
     } catch {
-        console.error(`Failed to load list.`);
+        console.error('Failed to load list.');
         return null;
     }
 }
@@ -73,8 +93,7 @@ export async function fetchList() {
 export async function fetchEditors() {
     try {
         const editorsResults = await fetch(`${dir}/_editors.json`);
-        const editors = await editorsResults.json();
-        return editors;
+        return await editorsResults.json();
     } catch {
         return null;
     }
@@ -82,53 +101,26 @@ export async function fetchEditors() {
 
 export async function fetchLeaderboard() {
     const list = await fetchList();
-
     const scoreMap = {};
     const errs = [];
     list.forEach(([level, err], rank) => {
-        if (err) {
-            errs.push(err);
-            return;
-        }
-
-        // Verification
-        const verifier = Object.keys(scoreMap).find(
-            (u) => u.toLowerCase() === level.verifier.toLowerCase(),
-        ) || level.verifier;
-        scoreMap[verifier] ??= {
-            verified: [],
-            completed: [],
-            progressed: [],
-        };
-        const { verified } = scoreMap[verifier];
-        verified.push({
+        if (err) { errs.push(err); return; }
+        const verifier = Object.keys(scoreMap).find(u => u.toLowerCase() === level.verifier.toLowerCase()) || level.verifier;
+        scoreMap[verifier] ??= { verified: [], completed: [], progressed: [] };
+        scoreMap[verifier].verified.push({
             rank: rank + 1,
             level: level.name,
             score: score(rank + 1, 100, level.percentToQualify),
             link: level.verification,
         });
-
-        // Records
-        level.records.forEach((record) => {
-            const user = Object.keys(scoreMap).find(
-                (u) => u.toLowerCase() === record.user.toLowerCase(),
-            ) || record.user;
-            scoreMap[user] ??= {
-                verified: [],
-                completed: [],
-                progressed: [],
-            };
+        level.records.forEach(record => {
+            const user = Object.keys(scoreMap).find(u => u.toLowerCase() === record.user.toLowerCase()) || record.user;
+            scoreMap[user] ??= { verified: [], completed: [], progressed: [] };
             const { completed, progressed } = scoreMap[user];
             if (record.percent === 100) {
-                completed.push({
-                    rank: rank + 1,
-                    level: level.name,
-                    score: score(rank + 1, 100, level.percentToQualify),
-                    link: record.link,
-                });
+                completed.push({ rank: rank + 1, level: level.name, score: score(rank + 1, 100, level.percentToQualify), link: record.link });
                 return;
             }
-
             progressed.push({
                 rank: rank + 1,
                 level: level.name,
@@ -138,21 +130,10 @@ export async function fetchLeaderboard() {
             });
         });
     });
-
-    // Wrap in extra Object containing the user and total score
     const res = Object.entries(scoreMap).map(([user, scores]) => {
         const { verified, completed, progressed } = scores;
-        const total = [verified, completed, progressed]
-            .flat()
-            .reduce((prev, cur) => prev + cur.score, 0);
-
-        return {
-            user,
-            total: round(total),
-            ...scores,
-        };
+        const total = [verified, completed, progressed].flat().reduce((prev, cur) => prev + cur.score, 0);
+        return { user, total: round(total), ...scores };
     });
-
-    // Sort by total score
     return [res.sort((a, b) => b.total - a.total), errs];
 }
