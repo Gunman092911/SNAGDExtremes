@@ -1,3 +1,21 @@
+/* Use the same Lexend Deca typeface throughout the entire site. */
+:root {
+    --font-family: "Lexend Deca", sans-serif;
+}
+
+*,
+*::before,
+*::after {
+    font-family: var(--font-family);
+}
+
+input,
+button,
+select,
+textarea {
+    font: inherit;
+}
+
 :root {
     --color-background: white;
     --color-on-background: black;
