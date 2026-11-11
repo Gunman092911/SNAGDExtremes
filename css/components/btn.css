@@ -19,3 +19,33 @@
 .btn:not(:disabled):hover:not(:active) {
     transform: translateY(-2px);
 }
+
+
+/* Consistent, restrained button styling */
+.btn {
+    padding: .72rem 1rem;
+    border-radius: .65rem;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    box-shadow: 0 3px 10px rgba(72, 59, 166, .16);
+    font-size: .9rem;
+    font-weight: 700;
+    transition: transform 140ms ease, filter 140ms ease, box-shadow 140ms ease;
+}
+
+.btn:not(:disabled):hover:not(:active) {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+    box-shadow: 0 5px 14px rgba(72, 59, 166, .2);
+}
+
+.btn:focus-visible,
+.nav a:focus-visible,
+.nav button:focus-visible {
+    outline: 3px solid rgba(138, 121, 255, .55);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .btn { transition: none; }
+}
