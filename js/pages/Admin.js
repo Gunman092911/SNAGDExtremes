@@ -47,7 +47,7 @@ export default {
                                     :style="{ cursor: busy ? 'default' : 'grab', opacity: busy ? .4 : .8, fontSize: '1.5rem', lineHeight: 1, userSelect: 'none' }"
                                     @dragstart="startLevelDrag(index, $event)"
                                     @dragend="endLevelDrag">⠿</span>
-                                <strong>#{{ index + 1 }} — {{ level.name }}</strong><small class="aredl-rank-badge">{{ level.aredlRank ? `AREDL #${level.aredlRank}` : "Unknown" }}</small>
+                                <strong>#{{ index + 1 }} — {{ level.name }}</strong><small class="aredl-rank-badge">{{ level.aredlRank ? "AREDL #" + level.aredlRank : "Unknown" }}</small>
                             </div>
                         </article>
                         </transition-group>
@@ -63,7 +63,7 @@ export default {
                         <label>Choose a level
                             <select v-model="selectedRecordLevel" @change="loadLevelManagementDrafts">
                                 <option value="">Select a level...</option>
-                                <option v-for="level in orderedLevels" :key="level.path" :value="level.path">{{ level.name }} — {{ level.aredlRank ? `AREDL #${level.aredlRank}` : "Unknown" }}</option>
+                                <option v-for="level in orderedLevels" :key="level.path" :value="level.path">{{ level.name }} — {{ level.aredlRank ? "AREDL #" + level.aredlRank : "Unknown" }}</option>
                             </select>
                         </label>
                         <div v-if="selectedRecordLevel" class="level-manager-content">
