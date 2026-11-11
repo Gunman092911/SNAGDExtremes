@@ -32,6 +32,7 @@ export default {
                         <h2>Reorder Public List ({{ orderedLevels.length }} levels)</h2>
                         <p class="submission-intro">Move levels to change their public ranking. Changes also update leaderboard points.</p>
                         <p v-if="!orderedLevels.length">Loading levels...</p>
+                        <transition-group name="level-sort" tag="div" class="level-sort-list">
                         <article v-for="(level, index) in orderedLevels" :key="level.path" class="submission-card"
                             :style="{ opacity: dragIndex === index ? 0.45 : 1, outline: dragOverIndex === index ? '2px dashed var(--color-primary)' : 'none' }"
                             @dragover.prevent="dragOverIndex = index"
@@ -49,6 +50,7 @@ export default {
                                 <strong>#{{ index + 1 }} — {{ level.name }}</strong>
                             </div>
                         </article>
+                        </transition-group>
                         <button class="btn" @click="saveOrder" :disabled="busy || !orderedLevels.length">Save List Order</button>
                     </section>
                     <section class="admin-section">
