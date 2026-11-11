@@ -170,6 +170,7 @@ export default {
         email: '', password: '', user: null, submissions: [], levelRequests: [], levels: [], orderedLevels: [],
         originalOrder: [], movedLevelPaths: [],
         dragIndex: null, dragOverIndex: null,
+        recordDragIndex: null, recordDragOverIndex: null, recordOrderDirty: false,
         selectedRecordLevel: '',
         selectedVerifierLevel: '',
         verifierDraft: '',
@@ -254,7 +255,8 @@ export default {
             this.orderedLevels = (list || []).filter(([level]) => !!level).map(([level]) => ({ ...level, moveTo: null }));
             this.originalOrder = this.orderedLevels.map(level => level.path);
             this.movedLevelPaths = [];
-            if (!this.selectedRecordLevel && this.orderedLevels.length) this.selectedRecordLevel = this.orderedLevels[0].path;\n            if (this.selectedRecordLevel) this.loadLevelManagementDrafts();
+            if (!this.selectedRecordLevel && this.orderedLevels.length) this.selectedRecordLevel = this.orderedLevels[0].path;
+            if (this.selectedRecordLevel) this.loadLevelManagementDrafts();
             if (!this.selectedVerifierLevel && this.orderedLevels.length) {
                 this.selectedVerifierLevel = this.orderedLevels[0].path;
                 this.loadVerifierDraft();
@@ -335,6 +337,57 @@ export default {
                 this.orderedLevels.forEach(level => { level.moveTo = null; });
             } catch (error) {
                 this.error = error.message || 'Could not save the list order. Check that the list-order SQL setup has been run.';
+            } finally { this.busy = false; }
+        },
+        loadLevelManagementDrafts() {
+            this.selectedVideoLevel = this.selectedRecordLevel;
+            this.selectedVerifierLevel = this.selectedRecordLevel;
+            this.recordOrderDirty = false;
+            this.endRecordDrag();
+            this.loadVerifierDraft();
+            this.loadVideoDraft();
+        },
+        recordKey(record) {
+            return JSON.stringify([String(record.user || ''), String(record.link || ''), Number(record.percent), Number(record.hz)]);
+        },
+        startRecordDrag(index, event) {
+            if (this.busy) { event.preventDefault(); return; }
+            this.recordDragIndex = index;
+            this.recordDragOverIndex = index;
+            if (event.dataTransfer) {
+                event.dataTransfer.effectAllowed = 'move';
+                event.dataTransfer.setData('text/plain', String(index));
+            }
+        },
+        dropRecord(toIndex) {
+            const fromIndex = this.recordDragIndex;
+            this.endRecordDrag();
+            if (fromIndex === null || fromIndex === toIndex) return;
+            const level = this.orderedLevels.find(item => item.path === this.selectedRecordLevel);
+            if (!level) return;
+            const moved = level.records.splice(fromIndex, 1)[0];
+            level.records.splice(toIndex, 0, moved);
+            this.recordOrderDirty = true;
+        },
+        endRecordDrag() {
+            this.recordDragIndex = null;
+            this.recordDragOverIndex = null;
+        },
+        async saveRecordOrder() {
+            const level = this.orderedLevels.find(item => item.path === this.selectedRecordLevel);
+            if (!level || !this.recordOrderDirty) return;
+            this.error = ''; this.message = ''; this.busy = true;
+            try {
+                const { error } = await supabase.from('snagd_record_order').upsert({
+                    level_key: level.path,
+                    record_order: level.records.map(record => this.recordKey(record)),
+                    updated_at: new Date().toISOString(),
+                }, { onConflict: 'level_key' });
+                if (error) throw error;
+                this.recordOrderDirty = false;
+                this.message = 'Record order for ' + level.name + ' has been saved.';
+            } catch (error) {
+                this.error = error.message || 'Could not save record order. Check that the record-order SQL setup has been run.';
             } finally { this.busy = false; }
         },
         loadVerifierDraft() {
