@@ -1,0 +1,22 @@
+{
+    "id": 149933070,
+    "name": "BLGHAs Burger (UNRATED)",
+    "author": "BLGHABacon",
+    "creators": ["BLGHABacon"],
+    "verifier": "Flight",
+    "verification": "https://youtu.be/taVHHjDRvM8?si=AWyv68jPxICXTkOs",
+    "percentToQualify": 100,
+    "password": [],
+    "records": [
+        {
+            "user": "Orbitra",
+            "link": "https://youtu.be/GAyVQKe-73I?si=rFdQhplmVj7Cnwg2",
+            "percent": 100
+        },
+        {
+            "user": "MikeyGD",
+            "link": "https://youtu.be/iik25wqIuFo?si=9lhjz2ghEon9CMa8",
+            "percent": 100
+        }
+    ]
+}
