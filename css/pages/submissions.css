@@ -178,6 +178,16 @@
     margin-top: 1.5rem;
 }
 
+/* Keep only the staff login controls compact. */
+.admin-panel .submission-form .btn {
+    width: auto;
+    min-height: 2.35rem;
+    padding: .5rem .85rem;
+    align-self: center;
+    font-size: .9rem;
+    box-shadow: none;
+}
+
 .admin-toolbar,
 .submission-actions {
     display: flex;
