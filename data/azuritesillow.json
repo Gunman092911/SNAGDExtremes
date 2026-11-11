@@ -1,0 +1,22 @@
+{
+    "id": 62214792,
+    "name": "Azurite (Sillow)",
+    "author": "Sillow",
+    "creators": ["Sillow"],
+    "verifier": "Flight",
+    "verification": "https://youtu.be/7-TBUQYnaKU",
+    "percentToQualify": 100,
+    "password": [],
+    "records": [
+        {
+            "user": "Orbitra",
+            "link": "https://youtu.be/BG7uwRHSSzI",
+            "percent": 100
+        },
+        {
+            "user": "MikeyGD",
+            "link": "https://youtu.be/xGipHJ54SBA",
+            "percent": 100
+        }
+    ]
+}
