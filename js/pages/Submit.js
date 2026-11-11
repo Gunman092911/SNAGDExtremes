@@ -16,6 +16,19 @@ export default {
                             <option v-for="level in levels" :key="level.key" :value="level.key">{{ level.name }}</option>
                         </select>
                     </label>
+                    <p class="submission-intro">Can't find the Extreme Demon? <button class="btn btn-secondary" type="button" @click="showLevelRequest = !showLevelRequest">Request a Level</button></p>
+                    <section v-if="showLevelRequest" class="admin-section">
+                        <h2>Request an Unlisted Level</h2>
+                        <p class="submission-intro">Send the level details to staff. If approved, it will be added to the record submission dropdown.</p>
+                        <form @submit.prevent="requestLevel" class="submission-form">
+                            <label>Level Name<input v-model.trim="levelRequest.name" required maxlength="100"></label>
+                            <label>Geometry Dash Level ID<input v-model.trim="levelRequest.id" type="number" min="1" required></label>
+                            <label>Verifier Username<input v-model.trim="levelRequest.verifier" required maxlength="50"></label>
+                            <label>Verification Video URL<input v-model.trim="levelRequest.verification" type="url" required></label>
+                            <label>AREDL Rank (optional)<input v-model.number="levelRequest.aredlRank" type="number" min="1"></label>
+                            <button class="btn" type="submit" :disabled="requestSending">{{ requestSending ? 'Sending...' : 'Send Level Request' }}</button>
+                        </form>
+                    </section>
                     <div class="submission-row">
                         <label>Progress (%)
                             <input v-model.number="form.percent" type="number" min="1" max="100" step="1" required>
@@ -45,6 +58,9 @@ export default {
     data: () => ({
         levels: [],
         sending: false,
+        showLevelRequest: false,
+        requestSending: false,
+        levelRequest: { name: '', id: '', verifier: '', verification: '', aredlRank: null },
         error: '',
         success: '',
         form: { username: '', levelKey: '', percent: 100, hz: 240, proofUrl: '', rawFootageUrl: '', notes: '' },
@@ -80,6 +96,28 @@ export default {
         }
     },
     methods: {
+        async requestLevel() {
+            this.error = ''; this.success = '';
+            const id = Number(this.levelRequest.id);
+            if (!Number.isSafeInteger(id) || id <= 0) { this.error = 'Enter a valid Geometry Dash level ID.'; return; }
+            if (this.levelRequest.aredlRank !== null && (!Number.isInteger(this.levelRequest.aredlRank) || this.levelRequest.aredlRank < 1)) { this.error = 'AREDL rank must be a positive whole number.'; return; }
+            this.requestSending = true;
+            try {
+                const { error } = await supabase.from('snagd_level_requests').insert({
+                    level_name: this.levelRequest.name,
+                    level_id: id,
+                    verifier: this.levelRequest.verifier,
+                    verification_url: this.levelRequest.verification,
+                    aredl_rank: this.levelRequest.aredlRank || null,
+                });
+                if (error) throw error;
+                this.success = 'Level request sent! Staff will review it.';
+                this.levelRequest = { name: '', id: '', verifier: '', verification: '', aredlRank: null };
+                this.showLevelRequest = false;
+            } catch (error) {
+                this.error = error.message || 'Could not send the level request.';
+            } finally { this.requestSending = false; }
+        },
         async submitRecord() {
             this.error = ''; this.success = '';
             const level = this.levels.find(item => item.key === this.form.levelKey);
