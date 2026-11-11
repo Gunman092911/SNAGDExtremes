@@ -44,6 +44,27 @@ export default {
                         <button class="btn" @click="saveOrder" :disabled="busy || !orderedLevels.length">Save List Order</button>
                     </section>
                     <section class="admin-section">
+                        <h2>Manage Records</h2>
+                        <p class="submission-intro">Remove an individual record from a level without deleting the level.</p>
+                        <label>Choose a level
+                            <select v-model="selectedRecordLevel">
+                                <option value="">Select a level...</option>
+                                <option v-for="level in orderedLevels" :key="level.path" :value="level.path">{{ level.name }}</option>
+                            </select>
+                        </label>
+                        <p v-if="selectedRecordLevel && !recordsForSelectedLevel.length">This level has no records.</p>
+                        <article v-for="record in recordsForSelectedLevel" :key="record.user + record.link + record.percent" class="submission-card">
+                            <div>
+                                <strong>{{ record.user }} — {{ record.percent }}%</strong>
+                                <p>{{ record.hz }}Hz · <a :href="record.link" target="_blank" rel="noopener">Proof video</a></p>
+                            </div>
+                            <div class="submission-actions">
+                                <button class="btn btn-danger" @click="deleteRecord(record)" :disabled="busy">Remove Record</button>
+                            </div>
+                        </article>
+                    </section>
+
+                    <section class="admin-section">
                         <h2>Manage Submitted Levels ({{ levels.length }})</h2>
                         <p class="submission-intro">Remove a level you added by mistake. This removes it from the public list and submission dropdown.</p>
                         <p v-if="!levels.length">No staff-added levels yet.</p>
@@ -102,6 +123,7 @@ export default {
     `,
     data: () => ({
         email: '', password: '', user: null, submissions: [], levelRequests: [], levels: [], orderedLevels: [],
+        selectedRecordLevel: '',
         loading: false, busy: false, error: '', message: '',
         newLevel: { name: '', id: '', verifier: '', verification: '', percentToQualify: 100 },
     }),
@@ -121,6 +143,12 @@ export default {
             store.staff = false;
             Promise.resolve().then(() => this.setUser(session.user));
         });
+    },
+    computed: {
+        recordsForSelectedLevel() {
+            const level = this.orderedLevels.find(item => item.path === this.selectedRecordLevel);
+            return level ? level.records : [];
+        },
     },
     methods: {
         async setUser(user) {
@@ -173,6 +201,7 @@ export default {
         async loadOrder() {
             const list = await fetchList();
             this.orderedLevels = (list || []).filter(([level]) => !!level).map(([level]) => ({ ...level, moveTo: null }));
+            if (!this.selectedRecordLevel && this.orderedLevels.length) this.selectedRecordLevel = this.orderedLevels[0].path;
         },
         moveLevel(fromIndex, toIndex) {
             if (toIndex < 0 || toIndex >= this.orderedLevels.length || fromIndex === toIndex) return;
@@ -301,6 +330,26 @@ export default {
                 this.message = level.name + ' was deleted.';
             } catch (error) {
                 this.error = error.message || 'Could not delete this level.';
+            } finally { this.busy = false; }
+        },
+        async deleteRecord(record) {
+            const level = this.orderedLevels.find(item => item.path === this.selectedRecordLevel);
+            if (!level) return;
+            if (!window.confirm('Remove ' + record.user + '\'s ' + record.percent + '% record from ' + level.name + '?')) return;
+            this.error = ''; this.message = ''; this.busy = true;
+            try {
+                const { error } = await supabase.from('snagd_removed_records').upsert({
+                    level_key: level.path,
+                    username: record.user,
+                    proof_url: record.link,
+                    percent: Number(record.percent),
+                    hz: Number(record.hz),
+                }, { onConflict: 'level_key,username,proof_url,percent,hz', ignoreDuplicates: true });
+                if (error) throw error;
+                this.message = record.user + '\'s record was removed from ' + level.name + '.';
+                await this.loadOrder();
+            } catch (error) {
+                this.error = error.message || 'Could not remove this record. Check that the record-removal SQL setup has been run.';
             } finally { this.busy = false; }
         },
         async review(item, status) {
