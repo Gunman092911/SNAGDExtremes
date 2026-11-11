@@ -72,6 +72,7 @@ export default {
                             <h3>{{ item.username }} — {{ item.level_name }}</h3>
                             <p>{{ item.percent }}% · {{ item.hz }}Hz</p>
                             <p><a :href="item.proof_url" target="_blank" rel="noopener">Open video proof</a></p>
+                            <p v-if="item.raw_footage_url"><a :href="item.raw_footage_url" target="_blank" rel="noopener">Open raw footage</a></p>
                             <p v-if="item.notes">{{ item.notes }}</p>
                             <small>Submitted {{ new Date(item.created_at).toLocaleString() }}</small>
                         </div>
