@@ -16,7 +16,7 @@ export default {
                             <option v-for="level in levels" :key="level.key" :value="level.key">{{ level.name }}</option>
                         </select>
                     </label>
-                    <p class="submission-intro">Can't find the Extreme Demon? <button class="btn btn-secondary" type="button" @click="showLevelRequest = !showLevelRequest">Request a Level</button></p>
+                    <p class="submission-intro">Verified a level not on the list? <button class="btn btn-secondary" type="button" @click="showLevelRequest = !showLevelRequest">Request a Level</button></p>
                     <section v-if="showLevelRequest" class="admin-section">
                         <h2>Request an Unlisted Level</h2>
                         <p class="submission-intro">Send the level details to staff. If approved, it will be added to the record submission dropdown.</p>
