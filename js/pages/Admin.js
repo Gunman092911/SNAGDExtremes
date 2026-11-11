@@ -98,6 +98,14 @@ export default {
                                         <button class="btn" @click="saveVerifier" :disabled="busy || !verifierDraft.trim()">Save</button>
                                     </div>
                                 </div>
+                            <div class="level-manager-subsection">
+                                <h3>Level Background Screenshot</h3>
+                                <p class="submission-intro">Paste a direct image URL for a custom screenshot. Leave it blank to use the verification video's automatic YouTube thumbnail.</p>
+                                <label class="level-manager-video-input">
+                                    <input v-model.trim="backgroundDraft" type="url" maxlength="1000" placeholder="https://example.com/level-screenshot.jpg">
+                                </label>
+                                <button class="btn" @click="saveBackground" :disabled="busy">Save Background</button>
+                            </div>
                                 <div class="level-manager-subsection">
                                     <h3>YouTube Video</h3>
                                     <label class="level-manager-video-input">
@@ -176,6 +184,7 @@ export default {
         verifierDraft: '',
         selectedVideoLevel: '',
         videoDraft: '',
+        backgroundDraft: '',
         loading: false, busy: false, error: '', message: '',
         newLevel: { name: '', id: '', verifier: '', verification: '', percentToQualify: 100 },
     }),
@@ -346,6 +355,7 @@ export default {
             this.endRecordDrag();
             this.loadVerifierDraft();
             this.loadVideoDraft();
+            this.loadBackgroundDraft();
         },
         recordKey(record) {
             return JSON.stringify([String(record.user || ''), String(record.link || ''), Number(record.percent), Number(record.hz)]);
@@ -397,6 +407,39 @@ export default {
         loadVideoDraft() {
             const level = this.orderedLevels.find(item => item.path === this.selectedVideoLevel);
             this.videoDraft = level ? (level.verification || '') : '';
+        },
+        loadBackgroundDraft() {
+            const level = this.orderedLevels.find(item => item.path === this.selectedRecordLevel);
+            this.backgroundDraft = level ? (level.background_image || '') : '';
+        },
+        async saveBackground() {
+            const level = this.orderedLevels.find(item => item.path === this.selectedRecordLevel);
+            if (!level) return;
+            const imageUrl = this.backgroundDraft.trim();
+            if (imageUrl) {
+                try {
+                    const parsed = new URL(imageUrl);
+                    if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error();
+                } catch {
+                    this.error = 'Enter a valid direct image URL, or leave it blank for the automatic YouTube thumbnail.';
+                    return;
+                }
+            }
+            this.error = ''; this.message = ''; this.busy = true;
+            try {
+                const { error } = await supabase.from('snagd_level_backgrounds').upsert({
+                    level_key: level.path,
+                    image_url: imageUrl || null,
+                    updated_at: new Date().toISOString(),
+                }, { onConflict: 'level_key' });
+                if (error) throw error;
+                level.background_image = imageUrl;
+                this.message = imageUrl
+                    ? 'Custom background saved for ' + level.name + '.'
+                    : 'Custom background cleared for ' + level.name + '. The automatic thumbnail will be used.';
+            } catch (error) {
+                this.error = error.message || 'Could not save the background. Check that the background SQL setup has been run.';
+            } finally { this.busy = false; }
         },
         async saveVideoLink() {
             const level = this.orderedLevels.find(item => item.path === this.selectedVideoLevel);
