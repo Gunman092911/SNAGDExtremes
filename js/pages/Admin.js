@@ -709,7 +709,11 @@ export default {
                     username: record.user,
                     proof_url: record.link,
                     percent: Math.round(Number(record.percent)),
-                    hz: Math.round(Number(record.hz)),
+                    // Some legacy records do not have an Hz value. Store a stable
+                    // fallback so the removal marker can still be inserted.
+                    hz: Number.isFinite(Number(record.hz)) && record.hz !== null && record.hz !== ''
+                        ? Math.round(Number(record.hz))
+                        : 0,
                 });
                 if (error && error.code !== '23505') throw error;
 
