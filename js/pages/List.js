@@ -32,6 +32,7 @@ export default {
                         <td class="level" :class="{ 'active': selected == i, 'error': !level }">
                             <button @click="selected = i">
                                 <span class="type-label-lg">{{ level?.name || \`Error (\${err}.json)\` }}</span>
+                                <small v-if="level?.aredlRank" class="aredl-rank-badge">AREDL #{{ level.aredlRank }}</small>
                             </button>
                         </td>
                     </tr>
@@ -118,7 +119,7 @@ export default {
         loading: true,
         selected: 0,
         errors: [],
-        removedRecordsChannel: null,
+        removedRecordsChannel: null,\n        aredlRefreshInterval: null,
         roleIconMap,
         store
     }),
@@ -165,7 +166,7 @@ export default {
             }
         }
 
-        this.loading = false;
+        this.loading = false;\n\n        // Refresh AREDL placements on load and every 15 minutes.\n        await this.refreshAredlRanks();\n        this.aredlRefreshInterval = setInterval(() => this.refreshAredlRanks(), 15 * 60 * 1000);
 
         // Keep every already-open public list synchronized with staff removals.
         this.removedRecordsChannel = supabase
