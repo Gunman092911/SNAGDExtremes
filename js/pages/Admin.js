@@ -251,26 +251,24 @@ export default {
                 const { error } = await supabase.from('snagd_level_requests')
                     .update({ status, reviewed_at: new Date().toISOString() }).eq('id', request.id);
                 if (error) throw error;
-                let announcementSent = true;
-                if (status === 'approved') {
-                    announcementSent = await this.announceNewLevel({
-                        levelName: request.level_name,
-                        levelId: request.level_id,
-                        verifier: request.verifier,
-                    });
-                }
-                this.message = status === 'approved'
-                    ? request.level_name + ' was approved and added. Use Reorder Public List to choose its position.' +
-                        (announcementSent ? ' Discord announcement sent!' : ' However, the Discord announcement failed. Check the webhook setup.')
-                    : request.level_name + ' request was rejected.';
+                const announcementSent = await this.announceActivity({
+                    eventType: status === 'approved' ? 'level_added' : 'level_request_rejected',
+                    levelName: request.level_name,
+                    levelId: request.level_id,
+                    verifier: request.verifier,
+                });
+                this.message = (status === 'approved'
+                    ? request.level_name + ' was approved and added. Use Reorder Public List to choose its position.'
+                    : request.level_name + ' request was rejected.') +
+                    (announcementSent ? ' Discord announcement sent!' : ' Discord announcement failed. Check the webhook setup.');
                 await Promise.all([this.loadLevelRequests(), this.loadLevels()]);
             } catch (error) {
                 this.error = error.message || 'Could not review this level request.';
             } finally { this.busy = false; }
         },
-        async announceNewLevel(level) {
+        async announceActivity(activity) {
             try {
-                const { error } = await supabase.functions.invoke('announce-new-level', { body: level });
+                const { error } = await supabase.functions.invoke('announce-new-level', { body: activity });
                 if (error) {
                     console.error('Discord announcement failed:', error);
                     return false;
@@ -327,7 +325,14 @@ export default {
                 const { error } = await supabase.from('snagd_levels').delete().eq('level_key', level.level_key);
                 if (error) throw error;
                 this.levels = this.levels.filter(item => item.level_key !== level.level_key);
-                this.message = level.name + ' was deleted.';
+                const announcementSent = await this.announceActivity({
+                    eventType: 'level_removed',
+                    levelName: level.name,
+                    levelId: level.id,
+                    verifier: level.verifier,
+                });
+                this.message = level.name + ' was deleted.' +
+                    (announcementSent ? ' Discord announcement sent!' : ' Discord announcement failed.');
             } catch (error) {
                 this.error = error.message || 'Could not delete this level.';
             } finally { this.busy = false; }
@@ -346,7 +351,16 @@ export default {
                     hz: Number(record.hz),
                 }, { onConflict: 'level_key,username,proof_url,percent,hz', ignoreDuplicates: true });
                 if (error) throw error;
-                this.message = record.user + '\'s record was removed from ' + level.name + '.';
+                const announcementSent = await this.announceActivity({
+                    eventType: 'record_removed',
+                    username: record.user,
+                    levelName: level.name,
+                    percent: record.percent,
+                    hz: record.hz,
+                    proofUrl: record.link,
+                });
+                this.message = record.user + '\'s record was removed from ' + level.name + '.' +
+                    (announcementSent ? ' Discord announcement sent!' : ' Discord announcement failed.');
                 await this.loadOrder();
             } catch (error) {
                 this.error = error.message || 'Could not remove this record. Check that the record-removal SQL setup has been run.';
@@ -357,7 +371,18 @@ export default {
             try {
                 const { error } = await supabase.from('snagd_submissions').update({ status, reviewed_at: new Date().toISOString() }).eq('id', item.id);
                 if (error) throw error;
-                this.message = status === 'approved' ? 'Record approved. It will appear on the public list.' : 'Submission rejected.';
+                const announcementSent = await this.announceActivity({
+                    eventType: status === 'approved' ? 'record_added' : 'record_rejected',
+                    username: item.username,
+                    levelName: item.level_name,
+                    percent: item.percent,
+                    hz: item.hz,
+                    proofUrl: item.proof_url,
+                });
+                this.message = (status === 'approved'
+                    ? 'Record approved. It will appear on the public list.'
+                    : 'Submission rejected.') +
+                    (announcementSent ? ' Discord announcement sent!' : ' Discord announcement failed.');
                 await this.loadSubmissions();
             } catch (error) {
                 this.error = error.message || 'Could not update this submission.';
