@@ -1,0 +1,32 @@
+{
+    "id": 61079355,
+    "name": "Acu",
+    "author": "neigefeu",
+    "creators": ["neigefeu"],
+    "verifier": "MikeyGD",
+    "verification": "https://youtu.be/ZGG2Ilw5mo4?si=ZvCs7MLJX8aNxEBk",
+    "percentToQualify": 100,
+    "password": [],
+    "records": [
+        {
+            "user": "Orbitra",
+            "link": "",
+            "percent": 100
+        },
+        {
+            "user": "aciti11",
+            "link": "https://youtu.be/Nk22yqq-3GE",
+            "percent": 100
+        },
+        {
+            "user": "Flight",
+            "link": "https://youtu.be/p-oSJdf0vgU?si=DyYTXR9v9VkybUKx",
+            "percent": 100
+        },
+        {
+            "user": "Looney",
+            "link": "https://youtu.be/VL02AEP1QWQ?si=oZET4vIM2xCZwuRG",
+            "percent": 100
+        }
+    ]
+}
