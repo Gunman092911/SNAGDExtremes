@@ -74,7 +74,7 @@ export default {
                                 </div>
                                 <p class="submission-intro">Drag using the handle to set the order shown on the public level page.</p>
                                 <p v-if="!recordsForSelectedLevel.length" class="level-manager-empty">This level has no records yet.</p>
-                                <div v-else class="record-sort-list">
+                                <transition-group v-else name="record-sort" tag="div" class="record-sort-list">
                                     <article v-for="(record, index) in recordsForSelectedLevel" :key="recordKey(record)" class="submission-card record-sort-card"
                                         :class="{ 'record-dragging': recordDragIndex === index, 'record-drop-target': recordDragOverIndex === index }"
                                         @dragover.prevent="recordDragOverIndex = index" @drop.prevent="dropRecord(index)">
@@ -87,7 +87,7 @@ export default {
                                         </div>
                                         <button class="btn btn-danger" @click="deleteRecord(record)" :disabled="busy">Remove</button>
                                     </article>
-                                </div>
+                                </transition-group>
                                 <button class="btn" @click="saveRecordOrder" :disabled="busy || !recordOrderDirty">Save Record Order</button>
                             </div>
                             <div class="level-manager-settings">
