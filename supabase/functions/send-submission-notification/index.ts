@@ -15,8 +15,11 @@ Deno.serve(async (req) => {
     if (!authHeader) return respond({ error: "Sign-in required" }, 401);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const publishableKeys = JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}");
+    const secretKeys = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}");
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || publishableKeys.default;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || secretKeys.default;
+    if (!anonKey || !serviceKey) return respond({ error: "Supabase function keys are unavailable" }, 500);
     const resendKey = Deno.env.get("RESEND_API_KEY");
     const fromEmail = Deno.env.get("EMAIL_FROM");
 
