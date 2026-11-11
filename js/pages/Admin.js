@@ -209,6 +209,16 @@ export default {
             Promise.resolve().then(() => this.setUser(session.user));
         });
     },
+    watch: {
+        selectedRecordLevel() { this.persistAdminDrafts(); },
+        levelSettingsOpen() { this.persistAdminDrafts(); },
+        levelNameDraft() { this.persistAdminDrafts(); },
+        levelIdDraft() { this.persistAdminDrafts(); },
+        creatorDraft() { this.persistAdminDrafts(); },
+        publisherDraft() { this.persistAdminDrafts(); },
+        verifierDraft() { this.persistAdminDrafts(); },
+        videoDraft() { this.persistAdminDrafts(); },
+    },
     computed: {
         recordsForSelectedLevel() {
             const level = this.orderedLevels.find(item => item.path === this.selectedRecordLevel);
@@ -227,6 +237,7 @@ export default {
             this.user = user;
             store.staff = true;
             await Promise.all([this.loadSubmissions(), this.loadLevels(), this.loadLevelRequests()]);
+            this.restoreAdminDrafts();
         },
         async login() {
             this.error = ''; this.message = ''; this.busy = true;
@@ -351,6 +362,41 @@ export default {
             } catch (error) {
                 this.error = error.message || 'Could not save the list order. Check that the list-order SQL setup has been run.';
             } finally { this.busy = false; }
+        },
+        persistAdminDrafts() {
+            if (!this.user) return;
+            try {
+                localStorage.setItem('snagdAdminDrafts:' + this.user.id, JSON.stringify({
+                    selectedRecordLevel: this.selectedRecordLevel,
+                    levelSettingsOpen: this.levelSettingsOpen,
+                    levelNameDraft: this.levelNameDraft,
+                    levelIdDraft: this.levelIdDraft,
+                    creatorDraft: this.creatorDraft,
+                    publisherDraft: this.publisherDraft,
+                    verifierDraft: this.verifierDraft,
+                    videoDraft: this.videoDraft,
+                }));
+            } catch (error) {
+                console.warn('Could not save admin drafts locally:', error);
+            }
+        },
+        restoreAdminDrafts() {
+            if (!this.user) return;
+            try {
+                const raw = localStorage.getItem('snagdAdminDrafts:' + this.user.id);
+                if (!raw) return;
+                const draft = JSON.parse(raw);
+                const levelExists = this.orderedLevels.some(level => level.path === draft.selectedRecordLevel);
+                if (!levelExists) return;
+                this.selectedRecordLevel = draft.selectedRecordLevel;
+                this.loadLevelManagementDrafts();
+                for (const field of ['levelNameDraft', 'levelIdDraft', 'creatorDraft', 'publisherDraft', 'verifierDraft', 'videoDraft']) {
+                    if (typeof draft[field] === 'string') this[field] = draft[field];
+                }
+                this.levelSettingsOpen = !!draft.levelSettingsOpen;
+            } catch (error) {
+                console.warn('Could not restore admin drafts:', error);
+            }
         },
         loadLevelManagementDrafts() {
             this.selectedVideoLevel = this.selectedRecordLevel;
@@ -656,27 +702,37 @@ export default {
             if (!window.confirm('Remove ' + record.user + '\'s ' + record.percent + '% record from ' + level.name + '?')) return;
             this.error = ''; this.message = ''; this.busy = true;
             try {
-                const { error } = await supabase.from('snagd_removed_records').upsert({
+                // Insert-only is intentional: the table's staff policy grants INSERT, not UPDATE.
+                // A duplicate marker means this record was already removed previously.
+                const { error } = await supabase.from('snagd_removed_records').insert({
                     level_key: level.path,
                     username: record.user,
                     proof_url: record.link,
-                    percent: Number(record.percent),
-                    hz: Number(record.hz),
-                }, { onConflict: 'level_key,username,proof_url,percent,hz', ignoreDuplicates: true });
-                if (error) throw error;
-                const announcementSent = await this.announceActivity({
-                    eventType: 'record_removed',
-                    username: record.user,
-                    levelName: level.name,
-                    percent: record.percent,
-                    hz: record.hz,
-                    proofUrl: record.link,
+                    percent: Math.round(Number(record.percent)),
+                    hz: Math.round(Number(record.hz)),
                 });
-                this.message = record.user + '\'s record was removed from ' + level.name + '.' +
-                    (announcementSent ? ' Discord announcement sent!' : ' Discord announcement failed.');
-                await this.loadOrder();
+                if (error && error.code !== '23505') throw error;
+
+                // Update the dashboard immediately instead of reloading stale source data.
+                const key = this.recordKey(record);
+                level.records = level.records.filter(item => this.recordKey(item) !== key);
+                this.recordOrderDirty = false;
+
+                let announcementText = '';
+                if (!error) {
+                    const announcementSent = await this.announceActivity({
+                        eventType: 'record_removed',
+                        username: record.user,
+                        levelName: level.name,
+                        percent: record.percent,
+                        hz: record.hz,
+                        proofUrl: record.link,
+                    });
+                    announcementText = announcementSent ? ' Discord announcement sent!' : ' Discord announcement failed.';
+                }
+                this.message = record.user + '\'s record was removed from ' + level.name + '.' + announcementText;
             } catch (error) {
-                this.error = error.message || 'Could not remove this record. Check that the record-removal SQL setup has been run.';
+                this.error = error.message || 'Could not remove this record. Confirm the record-removal SQL setup is installed in Supabase and that you are signed in as staff.';
             } finally { this.busy = false; }
         },
         async review(item, status) {
