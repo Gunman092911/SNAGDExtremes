@@ -286,10 +286,7 @@ export default {
             try {
                 const { error } = await supabase.from('snagd_submissions').update({ status, reviewed_at: new Date().toISOString() }).eq('id', item.id);
                 if (error) throw error;
-
-                this.message = status === 'approved'
-                    ? 'Record approved and added to the public list.'
-                    : 'Submission rejected.';
+                this.message = status === 'approved' ? 'Record approved. It will appear on the public list.' : 'Submission rejected.';
                 await this.loadSubmissions();
             } catch (error) {
                 this.error = error.message || 'Could not update this submission.';
