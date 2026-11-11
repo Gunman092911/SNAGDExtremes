@@ -1,0 +1,18 @@
+{
+    "id": 88244926,
+    "name": "MISFIRE",
+    "author": "Galaxxyss",
+    "creators": ["Metsho, Galaxxyss, waffybun, MadisonYuko, lGenoxide, GawrGura, valentine, StarkytheSalad"],
+    "verifier": "Element",
+    "verification": "https://youtu.be/ICrU4PmDCoM",
+    "percentToQualify": "100",
+    "password": [],
+    "records": [
+          {
+            "user": "Flight",
+            "link": "https://www.youtube.com/watch?v=nlOwmuauI5E",
+            "percent": 100
+          }
+              ]
+        }
+
