@@ -1,0 +1,27 @@
+{
+    "id": 146399247,
+    "name": "rauchkammer",
+    "author": "Devilmine",
+    "creators": ["Devilmine"],
+    "verifier": "Orbitra",
+    "verification": "https://www.youtube.com/watch?v=hFiwKyJsLRA",
+    "percentToQualify": "100",
+    "password": [],
+    "records": [
+          {
+            "user": "MikeyGD",
+            "link": "https://www.youtube.com/watch?v=Me-8UXLOvYE",
+            "percent": 100
+          },
+      {
+        "user": "Flight",
+        "link": "https://www.youtube.com/watch?v=7ZZhCW9hQ5Y",
+        "percent": 100
+      },
+      {
+        "user": "Shepster",
+        "link": "https://www.youtube.com/watch?v=fCHU1ZzfhJk",
+        "percent": 100
+      }
+    ]
+}
