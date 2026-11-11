@@ -1,5 +1,6 @@
 import { supabase } from '../supabase.js';
 import { store } from '../main.js';
+import { fetchList } from '../content.js';
 
 export default {
     template: `
@@ -27,6 +28,21 @@ export default {
                     <p v-if="error" class="submission-error">{{ error }}</p>
                     <p v-if="message" class="submission-success">{{ message }}</p>
 
+                    <section class="admin-section">
+                        <h2>Reorder Public List ({{ orderedLevels.length }} levels)</h2>
+                        <p class="submission-intro">Move levels to change their public ranking. Changes also update leaderboard points.</p>
+                        <p v-if="!orderedLevels.length">Loading levels...</p>
+                        <article v-for="(level, index) in orderedLevels" :key="level.path" class="submission-card">
+                            <div><strong>#{{ index + 1 }} — {{ level.name }}</strong></div>
+                            <div class="submission-actions">
+                                <button class="btn btn-secondary" @click="moveLevel(index, index - 1)" :disabled="busy || index === 0">Up</button>
+                                <button class="btn btn-secondary" @click="moveLevel(index, index + 1)" :disabled="busy || index === orderedLevels.length - 1">Down</button>
+                                <input v-model.number="level.moveTo" type="number" min="1" :max="orderedLevels.length" aria-label="New rank" style="width: 5rem;">
+                                <button class="btn" @click="moveLevel(index, level.moveTo - 1)" :disabled="busy || !level.moveTo || level.moveTo < 1 || level.moveTo > orderedLevels.length">Move</button>
+                            </div>
+                        </article>
+                        <button class="btn" @click="saveOrder" :disabled="busy || !orderedLevels.length">Save List Order</button>
+                    </section>
                     <section class="admin-section">
                         <h2>Add a Verified Level</h2>
                         <p class="submission-intro">Add a newly verified level here. It will become available in the record submission dropdown and appear at the bottom of the list.</p>
@@ -87,7 +103,7 @@ export default {
         </main>
     `,
     data: () => ({
-        email: '', password: '', user: null, submissions: [], levels: [],
+        email: '', password: '', user: null, submissions: [], levels: [], orderedLevels: [],
         loading: false, busy: false, error: '', message: '',
         newLevel: { name: '', id: '', verifier: '', verification: '', percentToQualify: 100 },
     }),
@@ -149,11 +165,34 @@ export default {
             this.user = null; store.staff = false; this.submissions = [];
         },
         async loadLevels() {
+            await this.loadOrder();
             const { data, error } = await supabase.from('snagd_levels')
                 .select('level_key, id, name, verifier')
                 .order('created_at', { ascending: true });
             if (error) this.error = error.message;
             else this.levels = data || [];
+        },
+        async loadOrder() {
+            const list = await fetchList();
+            this.orderedLevels = (list || []).filter(([level]) => !!level).map(([level]) => ({ ...level, moveTo: null }));
+        },
+        moveLevel(fromIndex, toIndex) {
+            if (toIndex < 0 || toIndex >= this.orderedLevels.length || fromIndex === toIndex) return;
+            const moved = this.orderedLevels.splice(fromIndex, 1)[0];
+            this.orderedLevels.splice(toIndex, 0, moved);
+            this.orderedLevels.forEach(level => { level.moveTo = null; });
+        },
+        async saveOrder() {
+            this.error = ''; this.message = ''; this.busy = true;
+            try {
+                const rows = this.orderedLevels.map((level, position) => ({ level_key: level.path, position }));
+                const { error } = await supabase.from('snagd_list_order').upsert(rows, { onConflict: 'level_key' });
+                if (error) throw error;
+                this.message = 'The public list order has been saved.';
+                this.orderedLevels.forEach(level => { level.moveTo = null; });
+            } catch (error) {
+                this.error = error.message || 'Could not save the list order. Check that the list-order SQL setup has been run.';
+            } finally { this.busy = false; }
         },
         async loadSubmissions() {
             this.loading = true;
