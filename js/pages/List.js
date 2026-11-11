@@ -203,7 +203,7 @@ export default {
     methods: {
         async refreshAredlRanks() {
             try {
-                const response = await fetch('https://api.aredl.net/v2/api/levels', {
+                const response = await fetch('https://api.aredl.net/v2/api/aredl/levels', {
                     headers: { Accept: 'application/json' },
                 });
                 if (!response.ok) throw new Error('AREDL API returned ' + response.status);
