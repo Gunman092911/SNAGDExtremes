@@ -32,11 +32,11 @@ export const store = Vue.reactive({
         return {
             '--color-primary': t.primary,
             '--color-background': this.dark ? blendHex(t.background, '#080a12', 0.78) : t.background,
-            '--color-on-background': this.dark ? blendHex(t.text, '#ffffff', 0.22) : t.text,
+            '--color-on-background': this.dark ? blendHex(t.text, '#ffffff', 0.88) : t.text,
             '--snagd-panel': this.dark ? blendHex(t.panel, '#080a12', 0.76) : t.panel,
             '--snagd-header': this.dark ? blendHex(t.header, '#05060b', 0.55) : t.header,
             '--snagd-border': this.dark ? blendHex(t.primary, '#ffffff', 0.22) : '#e1e3ee',
-            '--snagd-muted': this.dark ? blendHex(t.text, '#ffffff', 0.42) : '#74798e',
+            '--snagd-muted': this.dark ? blendHex(t.text, '#ffffff', 0.62) : '#74798e',
             '--snagd-control-bg': this.dark ? blendHex(t.panel, '#080a12', 0.72) : t.panel,
             '--snagd-control-border': this.dark ? blendHex(t.primary, '#ffffff', 0.18) : '#d9dbea',
             '--snagd-control-hover': this.dark ? blendHex(t.background, '#ffffff', 0.08) : t.background,
