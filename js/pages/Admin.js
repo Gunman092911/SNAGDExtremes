@@ -32,8 +32,14 @@ export default {
                         <h2>Reorder Public List ({{ orderedLevels.length }} levels)</h2>
                         <p class="submission-intro">Move levels to change their public ranking. Changes also update leaderboard points.</p>
                         <p v-if="!orderedLevels.length">Loading levels...</p>
-                        <article v-for="(level, index) in orderedLevels" :key="level.path" class="submission-card">
-                            <div><strong>#{{ index + 1 }} — {{ level.name }}</strong></div>
+                        <article v-for="(level, index) in orderedLevels" :key="level.path" class="submission-card"
+                            draggable="true"
+                            :style="{ cursor: busy ? 'default' : 'grab', opacity: dragIndex === index ? 0.45 : 1, outline: dragOverIndex === index ? '2px dashed var(--color-primary)' : 'none' }"
+                            @dragstart="startLevelDrag(index, $event)"
+                            @dragover.prevent="dragOverIndex = index"
+                            @drop.prevent="dropLevel(index)"
+                            @dragend="endLevelDrag">
+                            <div><span aria-hidden="true" style="margin-right: .5rem; opacity: .65;">⠿</span><strong>#{{ index + 1 }} — {{ level.name }}</strong></div>
                             <div class="submission-actions">
                                 <button class="btn btn-secondary" @click="moveLevel(index, index - 1)" :disabled="busy || index === 0">Up</button>
                                 <button class="btn btn-secondary" @click="moveLevel(index, index + 1)" :disabled="busy || index === orderedLevels.length - 1">Down</button>
@@ -124,6 +130,7 @@ export default {
     data: () => ({
         email: '', password: '', user: null, submissions: [], levelRequests: [], levels: [], orderedLevels: [],
         originalOrder: [], movedLevelPaths: [],
+        dragIndex: null, dragOverIndex: null,
         selectedRecordLevel: '',
         loading: false, busy: false, error: '', message: '',
         newLevel: { name: '', id: '', verifier: '', verification: '', percentToQualify: 100 },
@@ -205,6 +212,28 @@ export default {
             this.originalOrder = this.orderedLevels.map(level => level.path);
             this.movedLevelPaths = [];
             if (!this.selectedRecordLevel && this.orderedLevels.length) this.selectedRecordLevel = this.orderedLevels[0].path;
+        },
+        startLevelDrag(index, event) {
+            if (this.busy) {
+                event.preventDefault();
+                return;
+            }
+            this.dragIndex = index;
+            this.dragOverIndex = index;
+            if (event.dataTransfer) {
+                event.dataTransfer.effectAllowed = 'move';
+                event.dataTransfer.setData('text/plain', String(index));
+            }
+        },
+        dropLevel(toIndex) {
+            const fromIndex = this.dragIndex;
+            this.endLevelDrag();
+            if (fromIndex === null || fromIndex === toIndex) return;
+            this.moveLevel(fromIndex, toIndex);
+        },
+        endLevelDrag() {
+            this.dragIndex = null;
+            this.dragOverIndex = null;
         },
         moveLevel(fromIndex, toIndex) {
             if (toIndex < 0 || toIndex >= this.orderedLevels.length || fromIndex === toIndex) return;
