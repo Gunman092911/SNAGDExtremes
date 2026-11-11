@@ -58,6 +58,24 @@ export default {
                         </article>
                     </section>
 
+                    <section class="admin-section">
+                        <h2>Unlisted Level Requests ({{ levelRequests.length }})</h2>
+                        <p v-if="!levelRequests.length">There are no pending level requests.</p>
+                        <article v-for="request in levelRequests" :key="request.id" class="submission-card">
+                            <div>
+                                <h3>{{ request.level_name }}</h3>
+                                <p>GD Level ID: {{ request.level_id }} · Verifier: {{ request.verifier }}</p>
+                                <p><a :href="request.verification_url" target="_blank" rel="noopener">Open verification video</a></p>
+                                <p v-if="request.aredl_rank">Suggested AREDL rank: #{{ request.aredl_rank }}</p>
+                                <small>Requested {{ new Date(request.created_at).toLocaleString() }}</small>
+                            </div>
+                            <div class="submission-actions">
+                                <button class="btn" @click="reviewLevelRequest(request, 'approved')" :disabled="busy">Approve & Add</button>
+                                <button class="btn btn-danger" @click="reviewLevelRequest(request, 'rejected')" :disabled="busy">Reject</button>
+                            </div>
+                        </article>
+                    </section>
+
                     <h2>Pending Submissions ({{ submissions.length }})</h2>
                     <p v-if="loading">Loading submissions...</p>
                     <p v-else-if="!submissions.length">There are no pending submissions.</p>
@@ -80,7 +98,7 @@ export default {
         </main>
     `,
     data: () => ({
-        email: '', password: '', user: null, submissions: [], levels: [], orderedLevels: [],
+        email: '', password: '', user: null, submissions: [], levelRequests: [], levels: [], orderedLevels: [],
         loading: false, busy: false, error: '', message: '',
         newLevel: { name: '', id: '', verifier: '', verification: '', percentToQualify: 100 },
     }),
@@ -112,7 +130,7 @@ export default {
             }
             this.user = user;
             store.staff = true;
-            await Promise.all([this.loadSubmissions(), this.loadLevels()]);
+            await Promise.all([this.loadSubmissions(), this.loadLevels(), this.loadLevelRequests()]);
         },
         async login() {
             this.error = ''; this.message = ''; this.busy = true;
@@ -169,6 +187,44 @@ export default {
                 this.orderedLevels.forEach(level => { level.moveTo = null; });
             } catch (error) {
                 this.error = error.message || 'Could not save the list order. Check that the list-order SQL setup has been run.';
+            } finally { this.busy = false; }
+        },
+        async loadLevelRequests() {
+            const { data, error } = await supabase.from('snagd_level_requests')
+                .select('*').eq('status', 'pending').order('created_at', { ascending: true });
+            if (error) this.error = error.message;
+            else this.levelRequests = data || [];
+        },
+        async reviewLevelRequest(request, status) {
+            this.error = ''; this.message = ''; this.busy = true;
+            try {
+                if (status === 'approved') {
+                    const levelKey = request.level_name.toLowerCase()
+                        .normalize('NFKD').replace(/[\\u0300-\\u036f]/g, '')
+                        .replace(/[^a-z0-9]+/g, '').slice(0, 60);
+                    if (!levelKey) throw new Error('The level name must contain letters or numbers.');
+                    const { error: addError } = await supabase.from('snagd_levels').insert({
+                        level_key: levelKey,
+                        id: request.level_id,
+                        name: request.level_name,
+                        verifier: request.verifier,
+                        verification: request.verification_url,
+                        percent_to_qualify: 100,
+                    });
+                    if (addError) {
+                        if (addError.code === '23505') throw new Error('A level with that name or Geometry Dash ID already exists.');
+                        throw addError;
+                    }
+                }
+                const { error } = await supabase.from('snagd_level_requests')
+                    .update({ status, reviewed_at: new Date().toISOString() }).eq('id', request.id);
+                if (error) throw error;
+                this.message = status === 'approved'
+                    ? request.level_name + ' was approved and added. Use Reorder Public List to choose its position.'
+                    : request.level_name + ' request was rejected.';
+                await Promise.all([this.loadLevelRequests(), this.loadLevels()]);
+            } catch (error) {
+                this.error = error.message || 'Could not review this level request.';
             } finally { this.busy = false; }
         },
         async loadSubmissions() {
