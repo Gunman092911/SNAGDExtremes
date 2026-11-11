@@ -11,8 +11,12 @@ export default {
                         <label>Email<input v-model.trim="email" type="email" required autocomplete="username"></label>
                         <label>Password<input v-model="password" type="password" required autocomplete="current-password"></label>
                         <p v-if="error" class="submission-error">{{ error }}</p>
+                        <p v-if="message" class="submission-success">{{ message }}</p>
                         <button class="btn" type="submit" :disabled="busy">{{ busy ? 'Signing in...' : 'Sign In' }}</button>
+                        <button class="btn btn-secondary" type="button" @click="sendPasswordReset" :disabled="busy">Send Password Reset Email</button>
                     </form>
+                    <p class="submission-intro">Enter your email above, then use the button to receive a password reset link.</p>
+                    <router-link to="/submit">Back to submissions</router-link>
                 </div>
                 <div v-else>
                     <div class="admin-toolbar">
@@ -63,6 +67,7 @@ export default {
         },
         async login() {
             this.error = '';
+            this.message = '';
             this.busy = true;
             try {
                 const { data, error } = await supabase.auth.signInWithPassword({ email: this.email, password: this.password });
@@ -70,6 +75,23 @@ export default {
                 await this.setUser(data.user);
             } catch (error) {
                 this.error = error.message || 'Sign in failed.';
+            } finally { this.busy = false; }
+        },
+        async sendPasswordReset() {
+            this.error = '';
+            this.message = '';
+            if (!this.email) {
+                this.error = 'Enter your admin email address first.';
+                return;
+            }
+            this.busy = true;
+            try {
+                const redirectTo = window.location.origin + window.location.pathname + '?reset-password=1';
+                const { error } = await supabase.auth.resetPasswordForEmail(this.email, { redirectTo });
+                if (error) throw error;
+                this.message = 'Password reset email sent. Open the newest email and follow its link.';
+            } catch (error) {
+                this.error = error.message || 'Could not send the password reset email.';
             } finally { this.busy = false; }
         },
         async logout() {
