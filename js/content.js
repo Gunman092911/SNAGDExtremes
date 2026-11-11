@@ -112,6 +112,33 @@ export async function fetchList() {
             }
         }
 
+
+        // Apply staff-managed level metadata to built-in and staff-added levels.
+        try {
+            const { data: metadataOverrides, error } = await supabase
+                .from('snagd_level_metadata_overrides')
+                .select('level_key, name, level_id, creators, publisher, verifier, verification');
+            if (error) throw error;
+            const overrides = new Map((metadataOverrides || []).map(item => [item.level_key, item]));
+            for (const [level] of levels) {
+                if (!level || !overrides.has(level.path)) continue;
+                const item = overrides.get(level.path);
+                if (item.name) level.name = item.name;
+                if (item.level_id) level.id = item.level_id;
+                if (Array.isArray(item.creators)) {
+                    level.creators = item.creators;
+                    level.author = item.creators[0] || '';
+                }
+                if (item.publisher !== null && item.publisher !== undefined) level.publisher = item.publisher;
+                if (item.verifier) level.verifier = item.verifier;
+                if (item.verification) level.verification = item.verification;
+            }
+        } catch (error) {
+            if (error.code !== '42P01' && error.code !== 'PGRST205') {
+                console.warn('Could not load level metadata overrides:', error.message);
+            }
+        }
+
         // Hide records that staff have removed from the public list.
         try {
             const { data: removedRecords, error } = await supabase
