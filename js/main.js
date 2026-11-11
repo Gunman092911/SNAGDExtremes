@@ -17,5 +17,9 @@ const router = VueRouter.createRouter({
 });
 
 app.use(router);
-
 app.mount('#app');
+
+router.isReady().then(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('reset-password') === '1') router.replace('/reset-password');
+});
