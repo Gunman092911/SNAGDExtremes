@@ -120,7 +120,7 @@ export default {
         selected: 0,
         errors: [],
         removedRecordsChannel: null,
-        aredlRefreshInterval: null,\n        aredlRefreshInterval: null,
+        aredlRefreshInterval: null,
         roleIconMap,
         store
     }),
@@ -167,7 +167,11 @@ export default {
             }
         }
 
-        this.loading = false;\n\n        // Refresh AREDL placements on load and every 15 minutes.\n        await this.refreshAredlRanks();\n        this.aredlRefreshInterval = setInterval(() => this.refreshAredlRanks(), 15 * 60 * 1000);
+        this.loading = false;
+
+        // Refresh AREDL placements on load and every 15 minutes.
+        await this.refreshAredlRanks();
+        this.aredlRefreshInterval = setInterval(() => this.refreshAredlRanks(), 15 * 60 * 1000);
 
         // Keep every already-open public list synchronized with staff removals.
         this.removedRecordsChannel = supabase
