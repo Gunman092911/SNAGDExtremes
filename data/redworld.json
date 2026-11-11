@@ -1,0 +1,22 @@
+{
+    "id": 2374518,
+    "name": "Red World",
+    "author": "saRy",
+    "creators": ["saRy, Neptune"],
+    "verifier": "Orbitra",
+    "verification": "https://youtu.be/Nx3AJqzw2Kc",
+    "percentToQualify": "100",
+    "password": [],
+    "records": [
+        {
+        "user": "Element",
+        "link": "https://youtu.be/MNbVElBct9Y",
+        "percent": 100
+        },
+        {
+        "user": "Flight",
+        "link": "https://youtu.be/mbtodtGQZOo",
+        "percent": 100
+        }
+    ]
+}
