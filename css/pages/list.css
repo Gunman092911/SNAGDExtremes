@@ -20,7 +20,7 @@
 .page-list .list .level {
     width: 100%;
 }
-.page-list .list .level button {
+.page-list .list .level .level-open-link {
     background-color: var(--color-background);
     color: var(--color-on-background);
     border: none;
@@ -30,13 +30,15 @@
     word-break: normal;
     overflow-wrap: anywhere;
     cursor: pointer;
+    display: block;
+    text-decoration: none;
 }
 .page-list .list .level.error button {
     color: var(--color-error);
     cursor: not-allowed;
     text-decoration: line-through;
 }
-.page-list .list .level button:hover {
+.page-list .list .level .level-open-link:hover {
     background-color: var(--color-background-hover);
     color: var(--color-on-background-hover);
 }
