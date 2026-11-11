@@ -96,6 +96,22 @@ export async function fetchList() {
             }
         }
 
+        // Apply staff-managed YouTube video links to built-in and staff-added levels.
+        try {
+            const { data: videoOverrides, error } = await supabase
+                .from('snagd_video_overrides')
+                .select('level_key, verification');
+            if (error) throw error;
+            const overrides = new Map((videoOverrides || []).map(item => [item.level_key, item.verification]));
+            for (const [level] of levels) {
+                if (level && overrides.has(level.path)) level.verification = overrides.get(level.path);
+            }
+        } catch (error) {
+            if (error.code !== '42P01' && error.code !== 'PGRST205') {
+                console.warn('Could not load YouTube video overrides:', error.message);
+            }
+        }
+
         // Hide records that staff have removed from the public list.
         try {
             const { data: removedRecords, error } = await supabase
