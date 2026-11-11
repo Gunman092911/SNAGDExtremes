@@ -29,27 +29,6 @@ export default {
                     <p v-if="message" class="submission-success">{{ message }}</p>
 
                     <section class="admin-section">
-                        <h2>Pending Level Submissions ({{ levelSubmissions.length }})</h2>
-                        <p class="submission-intro">Review new verified levels. AREDL rank is a reference; you choose the final SNAGD position.</p>
-                        <p v-if="!levelSubmissions.length">There are no pending level submissions.</p>
-                        <article v-for="item in levelSubmissions" :key="item.id" class="submission-card">
-                            <div>
-                                <h3>{{ item.level_name }}</h3>
-                                <p>Level ID: {{ item.level_id }} · Verifier: {{ item.verifier }}</p>
-                                <p v-if="item.aredl_rank">AREDl placement: #{{ item.aredl_rank }}</p>
-                                <p><a :href="item.verification_url" target="_blank" rel="noopener">Open verification video</a></p>
-                                <label>SNAGD position (1 = top)
-                                    <input v-model.number="item.position" type="number" min="1" :max="orderedLevels.length + 1">
-                                </label>
-                            </div>
-                            <div class="submission-actions">
-                                <button class="btn" @click="approveLevelSubmission(item)" :disabled="busy">Approve & Add to List</button>
-                                <button class="btn btn-danger" @click="rejectLevelSubmission(item)" :disabled="busy">Reject</button>
-                            </div>
-                        </article>
-                    </section>
-
-                    <section class="admin-section">
                         <h2>Reorder Public List ({{ orderedLevels.length }} levels)</h2>
                         <p class="submission-intro">Move levels to change their public ranking. Changes also update leaderboard points.</p>
                         <p v-if="!orderedLevels.length">Loading levels...</p>
@@ -124,7 +103,7 @@ export default {
         </main>
     `,
     data: () => ({
-        email: '', password: '', user: null, submissions: [], levelSubmissions: [], levels: [], orderedLevels: [],
+        email: '', password: '', user: null, submissions: [], levels: [], orderedLevels: [],
         loading: false, busy: false, error: '', message: '',
         newLevel: { name: '', id: '', verifier: '', verification: '', percentToQualify: 100 },
     }),
@@ -156,8 +135,7 @@ export default {
             }
             this.user = user;
             store.staff = true;
-            await this.loadLevels();
-            await Promise.all([this.loadSubmissions(), this.loadLevelSubmissions()]);
+            await Promise.all([this.loadSubmissions(), this.loadLevels()]);
         },
         async login() {
             this.error = ''; this.message = ''; this.busy = true;
@@ -215,63 +193,6 @@ export default {
             } catch (error) {
                 this.error = error.message || 'Could not save the list order. Check that the list-order SQL setup has been run.';
             } finally { this.busy = false; }
-        },
-        async loadLevelSubmissions() {
-            const { data, error } = await supabase.from('snagd_level_submissions').select('*').eq('status', 'pending').order('created_at', { ascending: true });
-            if (error) this.error = error.message;
-            else this.levelSubmissions = (data || []).map(item => ({
-                ...item,
-                position: item.aredl_rank ? Math.min(item.aredl_rank, this.orderedLevels.length + 1) : this.orderedLevels.length + 1,
-            }));
-        },
-        async approveLevelSubmission(item) {
-            this.error = ''; this.message = ''; this.busy = true;
-            try {
-                const levelKey = item.level_name.toLowerCase().normalize('NFKD')
-                    .replace(/[\\u0300-\\u036f]/g, '').replace(/[^a-z0-9]+/g, '').slice(0, 60);
-                if (!levelKey) throw new Error('The level name must contain letters or numbers.');
-                const levelRow = {
-                    level_key: levelKey,
-                    id: Number(item.level_id),
-                    name: item.level_name,
-                    verifier: item.verifier,
-                    verification: item.verification_url,
-                    percent_to_qualify: 100,
-                };
-                const { error: addError } = await supabase.from('snagd_levels').insert(levelRow);
-                if (addError) {
-                    if (addError.code === '23505') throw new Error('A level with that name or ID already exists.');
-                    throw addError;
-                }
-                const newLevel = {
-                    id: levelRow.id, name: levelRow.name, verifier: levelRow.verifier,
-                    verification: levelRow.verification, percentToQualify: 100,
-                    author: '', creators: [], password: [], records: [], path: levelKey,
-                };
-                const target = Math.max(0, Math.min(this.orderedLevels.length, Number(item.position || this.orderedLevels.length + 1) - 1));
-                this.orderedLevels.splice(target, 0, newLevel);
-                const orderRows = this.orderedLevels.map((level, position) => ({ level_key: level.path, position }));
-                const { error: orderError } = await supabase.from('snagd_list_order').upsert(orderRows, { onConflict: 'level_key' });
-                if (orderError) throw orderError;
-                const { error: updateError } = await supabase.from('snagd_level_submissions').update({ status: 'approved', reviewed_at: new Date().toISOString() }).eq('id', item.id);
-                if (updateError) throw updateError;
-                this.levelSubmissions = this.levelSubmissions.filter(entry => entry.id !== item.id);
-                this.message = item.level_name + ' was approved and added at position #' + (target + 1) + '.';
-                await this.loadOrder();
-            } catch (error) {
-                this.error = error.message || 'Could not approve this level.';
-                await this.loadLevels();
-            } finally { this.busy = false; }
-        },
-        async rejectLevelSubmission(item) {
-            this.busy = true; this.error = ''; this.message = '';
-            try {
-                const { error } = await supabase.from('snagd_level_submissions').update({ status: 'rejected', reviewed_at: new Date().toISOString() }).eq('id', item.id);
-                if (error) throw error;
-                this.levelSubmissions = this.levelSubmissions.filter(entry => entry.id !== item.id);
-                this.message = item.level_name + ' was rejected.';
-            } catch (error) { this.error = error.message || 'Could not reject this level.'; }
-            finally { this.busy = false; }
         },
         async loadSubmissions() {
             this.loading = true;
