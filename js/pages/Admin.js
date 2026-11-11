@@ -61,15 +61,18 @@ export default {
                     <section class="admin-section">
                         <h2>Unlisted Level Requests ({{ levelRequests.length }})</h2>
                         <p v-if="!levelRequests.length">There are no pending level requests.</p>
-                        <article v-for="request in levelRequests" :key="request.id" class="submission-card">
-                            <div>
+                        <article v-for="request in levelRequests" :key="request.id" class="submission-card level-request-card">
+                            <div class="level-request-details">
                                 <h3>{{ request.level_name }}</h3>
-                                <p>GD Level ID: {{ request.level_id }} · Verifier: {{ request.verifier }}</p>
-                                <p><a :href="request.verification_url" target="_blank" rel="noopener">Open verification video</a></p>
-                                <p v-if="request.aredl_rank">Suggested AREDL rank: #{{ request.aredl_rank }}</p>
-                                <small>Requested {{ new Date(request.created_at).toLocaleString() }}</small>
+                                <div class="level-request-meta">
+                                    <span><strong>Level ID</strong> {{ request.level_id }}</span>
+                                    <span><strong>Verifier</strong> {{ request.verifier }}</span>
+                                    <span v-if="request.aredl_rank"><strong>AREDL</strong> #{{ request.aredl_rank }}</span>
+                                </div>
+                                <a class="level-request-video" :href="request.verification_url" target="_blank" rel="noopener">Watch verification video ↗</a>
+                                <small class="level-request-date">Requested {{ new Date(request.created_at).toLocaleString() }}</small>
                             </div>
-                            <div class="submission-actions">
+                            <div class="submission-actions level-request-actions">
                                 <button class="btn" @click="reviewLevelRequest(request, 'approved')" :disabled="busy">Approve & Add</button>
                                 <button class="btn btn-danger" @click="reviewLevelRequest(request, 'rejected')" :disabled="busy">Reject</button>
                             </div>
