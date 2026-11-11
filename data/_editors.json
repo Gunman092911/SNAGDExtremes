@@ -1,6 +1,10 @@
 [
     {
         "role": "owner",
+        "name": "Gunman092911"
+    },
+    {
+        "role": "admin",
         "name": "Flight",
         "link": "https://www.youtube.com/@flightflig"
     },
