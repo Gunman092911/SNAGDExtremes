@@ -83,7 +83,7 @@ export default {
                                             @dragstart="startRecordDrag(index, $event)" @dragend="endRecordDrag">⠿</span>
                                         <div class="record-sort-details">
                                             <strong>{{ record.user }} — {{ record.percent }}%</strong>
-                                            <p>{{ record.hz }}Hz · <a :href="record.link" target="_blank" rel="noopener">Proof video</a></p>
+                                            <p><a :href="record.link" target="_blank" rel="noopener">Proof video</a></p>
                                         </div>
                                         <button class="btn btn-danger" @click="deleteRecord(record)" :disabled="busy">Remove</button>
                                     </article>
@@ -159,7 +159,7 @@ export default {
                     <article v-for="item in submissions" :key="item.id" class="submission-card">
                         <div>
                             <h3>{{ item.username }} — {{ item.level_name }}</h3>
-                            <p>{{ item.percent }}% · {{ item.hz }}Hz</p>
+                            <p>{{ item.percent }}%</p>
                             <p><a :href="item.proof_url" target="_blank" rel="noopener">Open video proof</a></p>
                             <p v-if="item.raw_footage_url"><a :href="item.raw_footage_url" target="_blank" rel="noopener">Open raw footage</a></p>
                             <p v-if="item.notes">{{ item.notes }}</p>
@@ -729,8 +729,7 @@ export default {
                         username: record.user,
                         levelName: level.name,
                         percent: record.percent,
-                        hz: record.hz,
-                        proofUrl: record.link,
+                            proofUrl: record.link,
                     });
                     announcementText = announcementSent ? ' Discord announcement sent!' : ' Discord announcement failed.';
                 }
@@ -749,7 +748,6 @@ export default {
                     username: item.username,
                     levelName: item.level_name,
                     percent: item.percent,
-                    hz: item.hz,
                     proofUrl: item.proof_url,
                 });
                 this.message = (status === 'approved'
