@@ -44,7 +44,7 @@ export default {
                         <button class="btn" @click="saveOrder" :disabled="busy || !orderedLevels.length">Save List Order</button>
                     </section>
                     <section class="admin-section">
-                        <h2>Manage Verified Levels ({{ levels.length }})</h2>
+                        <h2>Manage Submitted Levels ({{ levels.length }})</h2>
                         <p class="submission-intro">Remove a level you added by mistake. This removes it from the public list and submission dropdown.</p>
                         <p v-if="!levels.length">No staff-added levels yet.</p>
                         <article v-for="level in levels" :key="level.level_key" class="submission-card">
