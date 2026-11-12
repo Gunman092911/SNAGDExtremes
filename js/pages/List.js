@@ -261,12 +261,16 @@ export default {
         },
         async refreshIdlRanks() {
             try {
-                // IDL's public API includes its Main, Extended, and Legacy placements.
-                const response = await fetch('https://insanedemonlist.com/api/levels', {
-                    headers: { Accept: 'application/json' },
-                    cache: 'no-cache',
-                });
-                if (!response.ok) throw new Error('IDL API returned ' + response.status);
+                // Prefer our same-origin snapshot, refreshed automatically by GitHub Actions.
+                let response = await fetch('./data/idl-levels.json', { cache: 'no-cache' });
+                if (!response.ok) {
+                    // Fallback keeps the feature usable if the scheduled snapshot is not available yet.
+                    response = await fetch('https://insanedemonlist.com/api/levels', {
+                        headers: { Accept: 'application/json' },
+                        cache: 'no-cache',
+                    });
+                }
+                if (!response.ok) throw new Error('IDL data returned ' + response.status);
                 const payload = await response.json();
                 const idlLevels = Array.isArray(payload)
                     ? payload
