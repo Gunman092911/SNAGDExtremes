@@ -1,6 +1,12 @@
 name: Sync IDL placements
 
 on:
+  push:
+    branches:
+      - preview/github-pages
+    paths:
+      - 'scripts/sync-idl.mjs'
+      - '.github/workflows/sync-idl.yml'
   schedule:
     - cron: '17 */6 * * *'
   workflow_dispatch:
