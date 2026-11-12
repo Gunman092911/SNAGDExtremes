@@ -1,5 +1,5 @@
 import { supabase } from '../supabase.js';
-import { store } from '../main.js';
+import { store } from '../store.js';
 import { fetchList } from '../content.js';
 
 export default {
