@@ -33,6 +33,7 @@ export default {
                             <button @click="selected = i">
                                 <span class="type-label-lg">{{ level?.name || \`Error (\${err}.json)\` }}</span>
                                 <small v-if="level?.aredlRank" class="aredl-rank-badge">AREDL #{{ level.aredlRank }}</small>
+                            <small v-if="level?.idlRank" class="idl-rank-badge">IDL {{ level.idlTier }} #{{ level.idlRank }}</small>
                             </button>
                         </td>
                     </tr>
@@ -42,8 +43,9 @@ export default {
                 <div class="level-background-image" aria-hidden="true"></div>
                 <div class="level" v-if="level">
                     <h1>{{ level.name }}</h1>
-                    <div v-if="level.aredlRank" class="aredl-placement-badges">
-                        <span class="aredl-rank-badge">AREDL #{{ level.aredlRank }}</span>
+                    <div v-if="level.aredlRank || level.idlRank" class="aredl-placement-badges">
+                        <span v-if="level.aredlRank" class="aredl-rank-badge">AREDL #{{ level.aredlRank }}</span>
+                        <span v-if="level.idlRank" class="idl-rank-badge">IDL {{ level.idlTier }} #{{ level.idlRank }}</span>
                     </div>
                     <LevelAuthors :author="level.author" :creators="level.creators" :verifier="level.verifier" :publisher="level.publisher"></LevelAuthors>
                     <iframe class="video" id="videoframe" :src="video" frameborder="0"></iframe>
@@ -124,6 +126,7 @@ export default {
         errors: [],
         removedRecordsChannel: null,
         aredlRefreshInterval: null,
+        idlRefreshInterval: null,
         roleIconMap,
         store
     }),
@@ -173,8 +176,9 @@ export default {
         this.loading = false;
 
         // Refresh AREDL placements on load and every 15 minutes.
-        await this.refreshAredlRanks();
+        await Promise.all([this.refreshAredlRanks(), this.refreshIdlRanks()]);
         this.aredlRefreshInterval = setInterval(() => this.refreshAredlRanks(), 15 * 60 * 1000);
+        this.idlRefreshInterval = setInterval(() => this.refreshIdlRanks(), 15 * 60 * 1000);
 
         // Keep every already-open public list synchronized with staff removals.
         this.removedRecordsChannel = supabase
@@ -197,6 +201,10 @@ export default {
         if (this.aredlRefreshInterval) {
             clearInterval(this.aredlRefreshInterval);
             this.aredlRefreshInterval = null;
+        }
+        if (this.idlRefreshInterval) {
+            clearInterval(this.idlRefreshInterval);
+            this.idlRefreshInterval = null;
         }
         if (this.removedRecordsChannel) {
             supabase.removeChannel(this.removedRecordsChannel);
@@ -249,6 +257,52 @@ export default {
                 console.info('AREDL placements loaded:', matched, 'of', this.list.length, 'SNAGD levels matched.');
             } catch (error) {
                 console.warn('Could not refresh AREDL placements:', error);
+            }
+        },
+        async refreshIdlRanks() {
+            try {
+                // IDL's public API includes its Main, Extended, and Legacy placements.
+                const response = await fetch('https://insanedemonlist.com/api/levels', {
+                    headers: { Accept: 'application/json' },
+                    cache: 'no-cache',
+                });
+                if (!response.ok) throw new Error('IDL API returned ' + response.status);
+                const payload = await response.json();
+                const idlLevels = Array.isArray(payload)
+                    ? payload
+                    : (payload.data || payload.levels || payload.items || payload.results || []);
+                if (!Array.isArray(idlLevels) || idlLevels.length === 0) {
+                    throw new Error('IDL API returned an unexpected or empty level list');
+                }
+
+                const normalizeName = value => String(value || '')
+                    .toLowerCase()
+                    .replace(/\([^)]*\)/g, ' ')
+                    .replace(/[^a-z0-9]/g, '');
+                const rankByName = new Map();
+                for (const item of idlLevels) {
+                    const rank = Number(item.position ?? item.rank ?? item.placement);
+                    const name = normalizeName(item.name ?? item.title ?? item.level_name);
+                    if (name && Number.isFinite(rank) && rank > 0) {
+                        rankByName.set(name, rank);
+                    }
+                }
+
+                let matched = 0;
+                this.list = this.list.map(([level, err]) => {
+                    if (!level) return [level, err];
+                    const rank = rankByName.get(normalizeName(level.name)) ?? null;
+                    if (rank !== null) matched++;
+                    const idlTier = rank === null
+                        ? null
+                        : rank <= 75 ? 'Main'
+                        : rank <= 150 ? 'Extended'
+                        : 'Legacy';
+                    return [{ ...level, idlRank: rank, idlTier }, err];
+                });
+                console.info('IDL placements loaded:', matched, 'of', this.list.length, 'SNAGD levels matched.');
+            } catch (error) {
+                console.warn('Could not refresh IDL placements:', error);
             }
         },
         youtubeThumbnail(url) {
