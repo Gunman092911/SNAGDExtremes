@@ -43,6 +43,7 @@ export default {
                                             @dragstart="startLevelDrag(index, $event)" @dragend="endLevelDrag">⠿</span>
                                         <strong>#{{ index + 1 }} — {{ level.name }}</strong>
                                         <small class="aredl-rank-badge">{{ level.aredlRank ? "AREDL #" + level.aredlRank : "Unknown" }}</small>
+                                        <small v-if="level.idlRank" class="idl-rank-badge">IDL {{ level.idlTier }} #{{ level.idlRank }}</small>
                                     </div>
                                     <button class="admin-level-settings-button" type="button" :aria-label="'Settings for ' + level.name"
                                         :aria-expanded="selectedRecordLevel === level.path" title="Level settings"
@@ -220,7 +221,7 @@ export default {
         },
         async loadLevels() {
             await this.loadOrder();
-            await this.refreshAredlRanks();
+            await Promise.all([this.refreshAredlRanks(), this.refreshIdlRanks()]);
             const { data, error } = await supabase.from('snagd_levels')
                 .select('level_key, id, name, verifier')
                 .order('created_at', { ascending: true });
@@ -257,6 +258,51 @@ export default {
                 }));
             } catch (error) {
                 console.warn('Could not refresh admin AREDL placements:', error);
+            }
+        },
+        async refreshIdlRanks() {
+            try {
+                // Use the same-origin snapshot maintained by the scheduled GitHub Actions sync.
+                let response = await fetch('./data/idl-levels.json', { cache: 'no-cache' });
+                if (!response.ok) {
+                    response = await fetch('https://insanedemonlist.com/api/levels', {
+                        headers: { Accept: 'application/json' },
+                        cache: 'no-cache',
+                    });
+                }
+                if (!response.ok) throw new Error('IDL data returned ' + response.status);
+                const payload = await response.json();
+                const idlLevels = Array.isArray(payload)
+                    ? payload
+                    : (payload.data || payload.levels || payload.items || payload.results || []);
+                if (!Array.isArray(idlLevels) || !idlLevels.length) {
+                    throw new Error('IDL API returned an unexpected or empty level list');
+                }
+
+                const normalizeName = value => String(value || '')
+                    .toLowerCase()
+                    .replace(/\\([^)]*\\)/g, ' ')
+                    .replace(/[^a-z0-9]/g, '');
+                const rankByName = new Map();
+                for (const item of idlLevels) {
+                    const rank = Number(item.position ?? item.rank ?? item.placement);
+                    const name = normalizeName(item.name ?? item.title ?? item.level_name);
+                    if (name && Number.isFinite(rank) && rank > 0) rankByName.set(name, rank);
+                }
+
+                let matched = 0;
+                this.orderedLevels = this.orderedLevels.map(level => {
+                    const rank = rankByName.get(normalizeName(level.name)) ?? null;
+                    if (rank !== null) matched++;
+                    return {
+                        ...level,
+                        idlRank: rank,
+                        idlTier: rank === null ? null : rank <= 75 ? 'Main' : rank <= 150 ? 'Extended' : 'Legacy',
+                    };
+                });
+                console.info('Admin IDL placements loaded:', matched, 'of', this.orderedLevels.length, 'SNAGD levels matched.');
+            } catch (error) {
+                console.warn('Could not refresh admin IDL placements:', error);
             }
         },
         async loadOrder() {
