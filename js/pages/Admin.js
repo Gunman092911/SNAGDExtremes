@@ -29,107 +29,61 @@ export default {
                     <p v-if="message" class="submission-success">{{ message }}</p>
 
                     <section class="admin-section">
-                        <h2>Reorder Public List ({{ orderedLevels.length }} levels)</h2>
-                        <p class="submission-intro">Move levels to change their public ranking. Changes also update leaderboard points.</p>
-                        <p v-if="!orderedLevels.length">Loading levels...</p>
-                        <transition-group name="level-sort" tag="div" class="level-sort-list">
-                        <article v-for="(level, index) in orderedLevels" :key="level.path" class="submission-card"
-                            :style="{ opacity: dragIndex === index ? 0.45 : 1, outline: dragOverIndex === index ? '2px dashed var(--color-primary)' : 'none' }"
-                            @dragover.prevent="dragOverIndex = index"
-                            @drop.prevent="dropLevel(index)">
-                            <div style="display: flex; align-items: center; gap: .75rem;">
-                                <span
-                                    draggable="true"
-                                    role="button"
-                                    tabindex="0"
-                                    aria-label="Hold and drag to reorder level"
-                                    title="Hold and drag to reorder"
-                                    :style="{ cursor: busy ? 'default' : 'grab', opacity: busy ? .4 : .8, fontSize: '1.5rem', lineHeight: 1, userSelect: 'none' }"
-                                    @dragstart="startLevelDrag(index, $event)"
-                                    @dragend="endLevelDrag">⠿</span>
-                                <strong>#{{ index + 1 }} — {{ level.name }}</strong><small class="aredl-rank-badge">{{ level.aredlRank ? "AREDL #" + level.aredlRank : "Unknown" }}</small>
-                            </div>
-                        </article>
-                        </transition-group>
+                        <h2>Manage Public List ({{ orderedLevels.length }} levels)</h2>
+                        <p class="submission-intro">Drag levels to reorder them. Use the settings cog beside a level to edit its details, manage records, or remove it.</p>
                         <button class="btn" @click="saveOrder" :disabled="busy || !orderedLevels.length">Save List Order</button>
-                    </section>
-                    <section class="admin-section level-manager">
-                        <div class="level-manager-heading">
-                            <div>
-                                <h2>Manage Level</h2>
-                                <p class="submission-intro">Choose a level to reorder or remove its records, update its verifier, or change its YouTube video.</p>
-                            </div>
-                        </div>
-                        <label>Choose a level
-                            <select v-model="selectedRecordLevel" @change="loadLevelManagementDrafts">
-                                <option value="">Select a level...</option>
-                                <option v-for="level in orderedLevels" :key="level.path" :value="level.path">{{ level.name }} — {{ level.aredlRank ? "AREDL #" + level.aredlRank : "Unknown" }}</option>
-                            </select>
-                        </label>
-                        <div v-if="selectedRecordLevel" class="level-manager-content">
-                            <div class="level-manager-subsection">
-                                <div class="level-manager-subheading">
-                                    <h3>Records & Victors</h3>
-                                    <span class="level-manager-count">{{ recordsForSelectedLevel.length }} records</span>
+                        <transition-group name="level-sort" tag="div" class="level-sort-list">
+                            <article v-for="(level, index) in orderedLevels" :key="level.path" class="submission-card admin-level-card"
+                                :class="{ 'admin-level-card-open': selectedRecordLevel === level.path }"
+                                :style="{ opacity: dragIndex === index ? 0.45 : 1, outline: dragOverIndex === index ? '2px dashed var(--color-primary)' : 'none' }"
+                                @dragover.prevent="dragOverIndex = index" @drop.prevent="dropLevel(index)">
+                                <div class="admin-level-main">
+                                    <div class="admin-level-summary">
+                                        <span draggable="true" role="button" tabindex="0" title="Hold and drag to reorder" class="admin-level-drag"
+                                            @dragstart="startLevelDrag(index, $event)" @dragend="endLevelDrag">⠿</span>
+                                        <strong>#{{ index + 1 }} — {{ level.name }}</strong>
+                                        <small class="aredl-rank-badge">{{ level.aredlRank ? "AREDL #" + level.aredlRank : "Unknown" }}</small>
+                                    </div>
+                                    <button class="admin-level-settings-button" type="button" :aria-label="'Settings for ' + level.name"
+                                        :aria-expanded="selectedRecordLevel === level.path" title="Level settings"
+                                        @click="toggleLevelSettings(level)">⚙</button>
                                 </div>
-                                <p class="submission-intro">Drag using the handle to set the order shown on the public level page.</p>
-                                <p v-if="!recordsForSelectedLevel.length" class="level-manager-empty">This level has no records yet.</p>
-                                <transition-group v-else name="record-sort" tag="div" class="record-sort-list">
-                                    <article v-for="(record, index) in recordsForSelectedLevel" :key="recordKey(record)" class="submission-card record-sort-card"
-                                        :class="{ 'record-dragging': recordDragIndex === index, 'record-drop-target': recordDragOverIndex === index }"
-                                        @dragover.prevent="recordDragOverIndex = index" @drop.prevent="dropRecord(index)">
-                                        <span class="record-drag-handle" draggable="true" title="Hold and drag to reorder"
-                                            aria-label="Hold and drag to reorder record"
-                                            @dragstart="startRecordDrag(index, $event)" @dragend="endRecordDrag">⠿</span>
-                                        <div class="record-sort-details">
-                                            <strong>{{ record.user }} — {{ record.percent }}%</strong>
-                                            <p><a :href="record.link" target="_blank" rel="noopener">Proof video</a></p>
-                                        </div>
-                                        <button class="btn btn-danger" @click="deleteRecord(record)" :disabled="busy">Remove</button>
-                                    </article>
-                                </transition-group>
-                                <button class="btn" @click="saveRecordOrder" :disabled="busy || !recordOrderDirty">Save Record Order</button>
-                            </div>
-                            <div class="level-settings-launch">
-                                <div>
-                                    <h3>Level settings</h3>
-                                    <p class="submission-intro">Edit the level's information and public details.</p>
+                                <div v-if="selectedRecordLevel === level.path" class="admin-level-side-panel">
+                                    <div class="admin-level-panel-heading">
+                                        <div><h3>{{ level.name }}</h3><p class="submission-intro">Level details and records</p></div>
+                                        <button class="admin-level-close" type="button" aria-label="Close settings" @click="toggleLevelSettings(level)">×</button>
+                                    </div>
+                                    <div class="level-settings-grid">
+                                        <label>Level name<input v-model.trim="levelNameDraft" maxlength="100" placeholder="Level name"></label>
+                                        <label>Geometry Dash ID<input v-model.trim="levelIdDraft" inputmode="numeric" maxlength="20" placeholder="Level ID"></label>
+                                        <label>Creator(s)<input v-model.trim="creatorDraft" maxlength="300" placeholder="Separate multiple creators with commas"></label>
+                                        <label>Publisher<input v-model.trim="publisherDraft" maxlength="100" placeholder="Publisher"></label>
+                                        <label>Verifier<input v-model.trim="verifierDraft" maxlength="50" placeholder="Verifier username"></label>
+                                        <label class="level-settings-wide">Verification video<input v-model.trim="videoDraft" type="url" maxlength="500" placeholder="https://www.youtube.com/watch?v=..."></label>
+                                    </div>
+                                    <div class="level-settings-actions">
+                                        <button class="btn" @click="saveLevelSettings" :disabled="busy">Save Changes</button>
+                                        <button class="btn btn-danger" @click="deleteLevel(level)" :disabled="busy">Remove Level</button>
+                                    </div>
+                                    <div class="admin-records-panel">
+                                        <div class="level-manager-subheading"><h3>Records & Victors</h3><span class="level-manager-count">{{ recordsForSelectedLevel.length }} records</span></div>
+                                        <p class="submission-intro">Drag records using the handle to change their order on the public level page.</p>
+                                        <p v-if="!recordsForSelectedLevel.length" class="level-manager-empty">This level has no records yet.</p>
+                                        <transition-group v-else name="record-sort" tag="div" class="record-sort-list">
+                                            <article v-for="(record, recordIndex) in recordsForSelectedLevel" :key="recordKey(record)" class="submission-card record-sort-card"
+                                                :class="{ 'record-dragging': recordDragIndex === recordIndex, 'record-drop-target': recordDragOverIndex === recordIndex }"
+                                                @dragover.prevent="recordDragOverIndex = recordIndex" @drop.prevent="dropRecord(recordIndex)">
+                                                <span class="record-drag-handle" draggable="true" title="Hold and drag to reorder"
+                                                    @dragstart="startRecordDrag(recordIndex, $event)" @dragend="endRecordDrag">⠿</span>
+                                                <div class="record-sort-details"><strong>{{ record.user }} — {{ record.percent }}%</strong><p><a :href="record.link" target="_blank" rel="noopener">Proof video</a></p></div>
+                                                <button class="btn btn-danger" @click="deleteRecord(record)" :disabled="busy">Remove</button>
+                                            </article>
+                                        </transition-group>
+                                        <button class="btn btn-secondary" @click="saveRecordOrder" :disabled="busy || !recordOrderDirty">Save Record Order</button>
+                                    </div>
                                 </div>
-                                <button class="btn" type="button" @click="toggleLevelSettings">
-                                    {{ levelSettingsOpen ? 'Close Level Settings' : 'Open Level Settings' }}
-                                </button>
-                            </div>
-                            <div v-if="levelSettingsOpen" class="level-settings-editor">
-                                <div class="level-settings-grid">
-                                    <label>Level name<input v-model.trim="levelNameDraft" maxlength="100" placeholder="Level name"></label>
-                                    <label>Geometry Dash ID<input v-model.trim="levelIdDraft" inputmode="numeric" maxlength="20" placeholder="Level ID"></label>
-                                    <label>Creator(s)<input v-model.trim="creatorDraft" maxlength="300" placeholder="Separate multiple creators with commas"></label>
-                                    <label>Publisher<input v-model.trim="publisherDraft" maxlength="100" placeholder="Publisher"></label>
-                                    <label>Verifier<input v-model.trim="verifierDraft" maxlength="50" placeholder="Verifier username"></label>
-                                    <label class="level-settings-wide">Verification video
-                                        <input v-model.trim="videoDraft" type="url" maxlength="500" placeholder="https://www.youtube.com/watch?v=...">
-                                    </label>
-                                </div>
-                                <div class="level-settings-actions">
-                                    <button class="btn" @click="saveLevelSettings" :disabled="busy">Save Level Settings</button>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section class="admin-section">
-                        <h2>Manage Submitted Levels ({{ levels.length }})</h2>
-                        <p class="submission-intro">Remove a level you added by mistake. This removes it from the public list and submission dropdown.</p>
-                        <p v-if="!levels.length">No staff-added levels yet.</p>
-                        <article v-for="level in levels" :key="level.level_key" class="submission-card">
-                            <div>
-                                <h3>{{ level.name }}</h3>
-                                <small>Level ID: {{ level.id }} · Verified by {{ level.verifier }}</small>
-                            </div>
-                            <div class="submission-actions">
-                                <button class="btn btn-danger" @click="deleteLevel(level)" :disabled="busy">Delete</button>
-                            </div>
-                        </article>
+                            </article>
+                        </transition-group>
                     </section>
 
                     <section class="admin-section">
@@ -180,7 +134,6 @@ export default {
         dragIndex: null, dragOverIndex: null,
         recordDragIndex: null, recordDragOverIndex: null, recordOrderDirty: false,
         selectedRecordLevel: '',
-        levelSettingsOpen: false,
         levelNameDraft: '',
         levelIdDraft: '',
         creatorDraft: '',
@@ -211,7 +164,6 @@ export default {
     },
     watch: {
         selectedRecordLevel() { this.persistAdminDrafts(); },
-        levelSettingsOpen() { this.persistAdminDrafts(); },
         levelNameDraft() { this.persistAdminDrafts(); },
         levelIdDraft() { this.persistAdminDrafts(); },
         creatorDraft() { this.persistAdminDrafts(); },
@@ -312,8 +264,6 @@ export default {
             this.orderedLevels = (list || []).filter(([level]) => !!level).map(([level]) => ({ ...level, moveTo: null }));
             this.originalOrder = this.orderedLevels.map(level => level.path);
             this.movedLevelPaths = [];
-            if (!this.selectedRecordLevel && this.orderedLevels.length) this.selectedRecordLevel = this.orderedLevels[0].path;
-            if (this.selectedRecordLevel) this.loadLevelManagementDrafts();
             if (!this.selectedVerifierLevel && this.orderedLevels.length) {
                 this.selectedVerifierLevel = this.orderedLevels[0].path;
                 this.loadVerifierDraft();
@@ -401,7 +351,6 @@ export default {
             try {
                 localStorage.setItem('snagdAdminDrafts:' + this.user.id, JSON.stringify({
                     selectedRecordLevel: this.selectedRecordLevel,
-                    levelSettingsOpen: this.levelSettingsOpen,
                     levelNameDraft: this.levelNameDraft,
                     levelIdDraft: this.levelIdDraft,
                     creatorDraft: this.creatorDraft,
@@ -426,7 +375,6 @@ export default {
                 for (const field of ['levelNameDraft', 'levelIdDraft', 'creatorDraft', 'publisherDraft', 'verifierDraft', 'videoDraft']) {
                     if (typeof draft[field] === 'string') this[field] = draft[field];
                 }
-                this.levelSettingsOpen = !!draft.levelSettingsOpen;
             } catch (error) {
                 console.warn('Could not restore admin drafts:', error);
             }
@@ -435,15 +383,20 @@ export default {
             this.selectedVideoLevel = this.selectedRecordLevel;
             this.selectedVerifierLevel = this.selectedRecordLevel;
             this.recordOrderDirty = false;
-            this.levelSettingsOpen = false;
             this.endRecordDrag();
             this.loadLevelSettingsDrafts();
             this.loadVerifierDraft();
             this.loadVideoDraft();
         },
-        toggleLevelSettings() {
-            this.levelSettingsOpen = !this.levelSettingsOpen;
-            if (this.levelSettingsOpen) this.loadLevelSettingsDrafts();
+        toggleLevelSettings(level) {
+            if (this.selectedRecordLevel === level.path) {
+                this.selectedRecordLevel = '';
+                this.recordOrderDirty = false;
+                this.endRecordDrag();
+                return;
+            }
+            this.selectedRecordLevel = level.path;
+            this.loadLevelManagementDrafts();
         },
         loadLevelSettingsDrafts() {
             const level = this.orderedLevels.find(item => item.path === this.selectedRecordLevel);
