@@ -51,6 +51,22 @@ export async function fetchList() {
             }
         }
 
+        // Apply staff-hidden level markers before rendering the public list.
+        try {
+            const { data: hiddenLevels, error } = await supabase
+                .from('snagd_hidden_levels')
+                .select('level_key');
+            if (error) throw error;
+            const hiddenKeys = new Set((hiddenLevels || []).map(item => item.level_key));
+            for (let index = levels.length - 1; index >= 0; index--) {
+                if (levels[index][0] && hiddenKeys.has(levels[index][0].path)) levels.splice(index, 1);
+            }
+        } catch (error) {
+            if (error.code !== '42P01' && error.code !== 'PGRST205') {
+                console.warn('Could not load hidden levels:', error.message);
+            }
+        }
+
         // Approved community submissions are added to their matching level.
         try {
             const { data, error } = await supabase
