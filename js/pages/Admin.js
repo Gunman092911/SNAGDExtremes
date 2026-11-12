@@ -42,7 +42,7 @@ export default {
                                         <span draggable="true" role="button" tabindex="0" title="Hold and drag to reorder" class="admin-level-drag"
                                             @dragstart="startLevelDrag(index, $event)" @dragend="endLevelDrag">⠿</span>
                                         <strong>#{{ index + 1 }} — {{ level.name }}</strong>
-                                        <small class="aredl-rank-badge">{{ level.aredlRank ? "AREDL #" + level.aredlRank : "Unknown" }}</small>
+                                        <small v-if="level.aredlRank" class="aredl-rank-badge">AREDL #{{ level.aredlRank }}</small>
                                         <small v-if="level.idlRank" class="idl-rank-badge">IDL {{ level.idlTier }} #{{ level.idlRank }}</small>
                                     </div>
                                     <button class="admin-level-settings-button" type="button" :aria-label="'Settings for ' + level.name"
