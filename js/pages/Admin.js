@@ -281,7 +281,7 @@ export default {
 
                 const normalizeName = value => String(value || '')
                     .toLowerCase()
-                    .replace(/\\([^)]*\\)/g, ' ')
+                    .replace(/\([^)]*\)/g, ' ')
                     .replace(/[^a-z0-9]/g, '');
                 const rankByName = new Map();
                 for (const item of idlLevels) {
