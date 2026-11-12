@@ -432,3 +432,29 @@
 @media(prefers-reduced-motion:reduce) {
     .level-settings-editor { animation:none; }
 }
+
+
+/* Compact per-level admin settings panels */
+.admin-level-card { display: block; padding: 0; overflow: hidden; }
+.admin-level-main { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.15rem; }
+.admin-level-summary { display: flex; align-items: center; flex-wrap: wrap; gap: .8rem; min-width: 0; }
+.admin-level-summary strong { overflow-wrap: anywhere; }
+.admin-level-drag { cursor: grab; user-select: none; font-size: 1.45rem; line-height: 1; opacity: .75; }
+.admin-level-settings-button, .admin-level-close { display: inline-grid; place-items: center; flex: 0 0 auto; width: 2.5rem; height: 2.5rem; border: 1px solid var(--snagd-control-border); border-radius: .75rem; background: var(--snagd-control-bg); color: var(--snagd-muted); font-size: 1.2rem; cursor: pointer; transition: background .18s ease, color .18s ease, transform .18s ease; }
+.admin-level-settings-button:hover, .admin-level-close:hover { background: var(--snagd-control-hover); color: var(--color-primary); transform: translateY(-1px); }
+.admin-level-card-open { border-color: var(--color-primary); }
+.admin-level-side-panel { border-top: 1px solid var(--snagd-border); padding: 1.15rem; background: var(--snagd-panel); animation: admin-panel-in .18s ease-out; }
+.admin-level-panel-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
+.admin-level-panel-heading h3 { margin: 0 0 .2rem; }
+.admin-level-panel-heading .submission-intro { margin: 0; }
+.admin-level-close { font-size: 1.5rem; line-height: 1; }
+.admin-level-side-panel .level-settings-grid { margin: 0; }
+.admin-level-side-panel .level-settings-actions { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1rem; }
+.admin-records-panel { margin-top: 1.35rem; padding-top: 1.2rem; border-top: 1px solid var(--snagd-border); }
+.admin-records-panel .level-manager-subheading { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+@keyframes admin-panel-in { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 640px) {
+  .admin-level-main { padding: .85rem; }
+  .admin-level-side-panel { padding: .9rem; }
+  .admin-level-summary { gap: .5rem; }
+}
