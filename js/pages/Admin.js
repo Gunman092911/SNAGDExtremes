@@ -679,22 +679,36 @@ export default {
             } finally { this.busy = false; }
         },
         async deleteLevel(level) {
-            if (!window.confirm('Delete "' + level.name + '"? It will be removed from the public list and submission dropdown.')) return;
+            if (!window.confirm('Remove "' + level.name + '" from the public list? This also removes it from the submission dropdown.')) return;
             this.error = ''; this.message = ''; this.busy = true;
             try {
-                const { error } = await supabase.from('snagd_levels').delete().eq('level_key', level.level_key);
-                if (error) throw error;
-                this.levels = this.levels.filter(item => item.level_key !== level.level_key);
+                const customLevel = this.levels.find(item => item.level_key === level.path);
+                if (customLevel) {
+                    const { error } = await supabase.from('snagd_levels').delete().eq('level_key', level.path);
+                    if (error) throw error;
+                    this.levels = this.levels.filter(item => item.level_key !== level.path);
+                } else {
+                    const { error } = await supabase.from('snagd_hidden_levels').upsert({
+                        level_key: level.path,
+                        hidden_by: this.user.id,
+                        updated_at: new Date().toISOString(),
+                    }, { onConflict: 'level_key' });
+                    if (error) throw error;
+                }
+                this.orderedLevels = this.orderedLevels.filter(item => item.path !== level.path);
+                this.originalOrder = this.orderedLevels.map(item => item.path);
+                this.movedLevelPaths = [];
+                this.selectedRecordLevel = '';
                 const announcementSent = await this.announceActivity({
                     eventType: 'level_removed',
                     levelName: level.name,
                     levelId: level.id,
                     verifier: level.verifier,
                 });
-                this.message = level.name + ' was deleted.' +
+                this.message = level.name + ' was removed from the public list.' +
                     (announcementSent ? ' Discord announcement sent!' : ' Discord announcement failed.');
             } catch (error) {
-                this.error = error.message || 'Could not delete this level.';
+                this.error = error.message || 'Could not remove this level. If this is a built-in level, confirm the hidden-level SQL setup has been run in Supabase.';
             } finally { this.busy = false; }
         },
         async deleteRecord(record) {
