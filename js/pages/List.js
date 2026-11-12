@@ -1,4 +1,4 @@
-import { store } from "../main.js";
+import { store } from "../store.js";
 import { supabase } from "../supabase.js";
 import { embed } from "../util.js";
 import { score } from "../score.js";
