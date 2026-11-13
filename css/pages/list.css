@@ -261,24 +261,20 @@
 }
 .page-list .detail-favorite.saved { background: var(--snagd-accent-soft); color: #a18dff; }
 
-/* Small edge-mounted arrow toggles the information sidebar. */
-.page-list .meta-container { position: relative; }
-.page-list .level-container { position: relative; min-width: 0; }
+/* Fixed edge control sits beside the browser scrollbar at every viewport size. */
 .page-list .sidebar-edge-toggle {
-    position: absolute; z-index: 8; top: 50%; transform: translateY(-50%);
+    position: fixed; z-index: 100; top: 50vh; right: .2rem;
+    transform: translateY(-50%);
     display: flex; align-items: center; justify-content: center;
-    width: 1.65rem; height: 3.2rem; padding: 0;
+    width: 1.45rem; height: 3.2rem; padding: 0;
     border: 1px solid var(--snagd-accent-border);
+    border-right: 0; border-radius: .65rem 0 0 .65rem;
     background: var(--snagd-panel); color: var(--color-primary);
     box-shadow: var(--snagd-shadow); font-size: 1.25rem; font-weight: 800;
     cursor: pointer; transition: background 150ms ease, width 150ms ease;
 }
-.page-list .sidebar-edge-toggle:hover { width: 1.95rem; background: var(--snagd-accent-soft); }
-.page-list .sidebar-edge-toggle.expanded {
-    left: -.85rem; border-radius: .65rem 0 0 .65rem; border-right: 0;
-}
-.page-list .sidebar-edge-toggle.collapsed {
-    right: 0; border-radius: .65rem 0 0 .65rem; border-right: 0;
+.page-list .sidebar-edge-toggle:hover {
+    width: 1.7rem; background: var(--snagd-accent-soft);
 }
 
 .page-list .level-statistics {
@@ -329,13 +325,7 @@
 .page-list .record-expanded a { color: var(--color-primary); font-weight: 700; }
 
 @media (max-width: 900px) {
-    /* On stacked/mobile layouts, keep the sidebar arrow on the far right,
-       away from the text and clear of the left content gutter. */
-    .page-list .sidebar-edge-toggle.expanded {
-        left: auto; right: .25rem;
-        border-radius: .65rem 0 0 .65rem;
-        border-right: 0; border-left: 1px solid var(--snagd-accent-border);
-    }
+    .page-list .meta-container { padding-right: 2.5rem; }
     .page-list.meta-collapsed { grid-template-columns: minmax(0, 1fr); column-gap: 0; }
     .page-list.meta-collapsed .level-container { padding-top: .4rem; }
     .page-list .filter-row { grid-template-columns: 1fr; }
