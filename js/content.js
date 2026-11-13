@@ -133,7 +133,7 @@ export async function fetchList() {
         try {
             const { data: metadataOverrides, error } = await supabase
                 .from('snagd_level_metadata_overrides')
-                .select('level_key, name, level_id, creators, publisher, verifier, verification');
+                .select('level_key, name, level_id, creators, publisher, verifier, verification, updated_at');
             if (error) throw error;
             const overrides = new Map((metadataOverrides || []).map(item => [item.level_key, item]));
             for (const [level] of levels) {
@@ -148,6 +148,7 @@ export async function fetchList() {
                 if (item.publisher !== null && item.publisher !== undefined) level.publisher = item.publisher;
                 if (item.verifier) level.verifier = item.verifier;
                 if (item.verification) level.verification = item.verification;
+                if (item.updated_at) level.updatedAt = item.updated_at;
             }
         } catch (error) {
             if (error.code !== '42P01' && error.code !== 'PGRST205') {
