@@ -129,3 +129,18 @@
         align-self: stretch;
     }
 }
+
+/* Collapsible roulette options sidebar */
+.page-roulette { transition: grid-template-columns 220ms ease; }
+.page-roulette .sidebar, .page-roulette .levels-container { min-width: 0; }
+.page-roulette .levels-container { position: relative; }
+.page-roulette .sidebar-edge-toggle {
+ position: absolute; z-index: 10; left: -.85rem; top: 50%; transform: translateY(-50%);
+ width: 1.55rem; height: 3.2rem; padding: 0; border: 1px solid var(--snagd-accent-border);
+ border-radius: .65rem 0 0 .65rem; border-right: 0; background: var(--snagd-panel);
+ color: var(--color-primary); font-size: 1.2rem; font-weight: 800; cursor: pointer; box-shadow: var(--snagd-shadow);
+}
+.page-roulette.sidebar-collapsed { grid-template-columns: minmax(0, 1fr); column-gap: 0; }
+.page-roulette.sidebar-collapsed .sidebar { display: none; }
+.page-roulette.sidebar-collapsed .levels-container { grid-column: 1; }
+.page-roulette.sidebar-collapsed .sidebar-edge-toggle { left: 0; }
