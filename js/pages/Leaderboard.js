@@ -8,7 +8,6 @@ export default {
         Spinner,
     },
     data: () => ({
-        boardCollapsed: false,
         leaderboard: [],
         loading: true,
         selected: 0,
@@ -18,7 +17,7 @@ export default {
         <main v-if="loading">
             <Spinner></Spinner>
         </main>
-        <main v-else class="page-leaderboard-container" :class="{ &quot;board-collapsed&quot;: boardCollapsed }">
+        <main v-else class="page-leaderboard-container">
             <div class="page-leaderboard">
                 <div class="error-container">
                     <p class="error" v-if="err.length > 0">
@@ -44,7 +43,6 @@ export default {
                     </table>
                 </div>
                 <div class="player-container">
-                    <button type="button" class="sidebar-edge-toggle" @click="boardCollapsed = !boardCollapsed" :aria-label="boardCollapsed ? &quot;Show leaderboard&quot; : &quot;Hide leaderboard&quot;" :title="boardCollapsed ? &quot;Show leaderboard&quot; : &quot;Hide leaderboard&quot;">{{ boardCollapsed ? &quot;›&quot; : &quot;‹&quot; }}</button>
                     <div class="player">
                         <h1>#{{ selected + 1 }} {{ entry.user }}</h1>
                         <h3>{{ entry.total }}</h3>
