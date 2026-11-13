@@ -261,22 +261,6 @@
 }
 .page-list .detail-favorite.saved { background: var(--snagd-accent-soft); color: #a18dff; }
 
-/* Fixed edge control sits beside the browser scrollbar at every viewport size. */
-.page-list .sidebar-edge-toggle {
-    position: fixed; z-index: 100; top: 50vh; right: .2rem;
-    transform: translateY(-50%);
-    display: flex; align-items: center; justify-content: center;
-    width: 1.45rem; height: 3.2rem; padding: 0;
-    border: 1px solid var(--snagd-accent-border);
-    border-right: 0; border-radius: .65rem 0 0 .65rem;
-    background: var(--snagd-panel); color: var(--color-primary);
-    box-shadow: var(--snagd-shadow); font-size: 1.25rem; font-weight: 800;
-    cursor: pointer; transition: background 150ms ease, width 150ms ease;
-}
-.page-list .sidebar-edge-toggle:hover {
-    width: 1.7rem; background: var(--snagd-accent-soft);
-}
-
 .page-list .level-statistics {
     display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .65rem;
     margin-top: -.8rem;
@@ -290,30 +274,6 @@
 .page-list .level-updated { margin-top: -1.3rem; }
 .page-list .level-container .level { animation: snagd-level-in 190ms ease-out; }
 @keyframes snagd-level-in { from { opacity: .35; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-/* Collapsible right-hand information panel */
-.page-list { transition: grid-template-columns 220ms ease, column-gap 220ms ease; }
-.page-list .meta-container { min-width: 0; transition: opacity 160ms ease, transform 200ms ease, padding 200ms ease; }
-.page-list.meta-collapsed {
-    grid-template-columns: minmax(16rem, 1fr) minmax(0, 2.15fr) 0;
-    column-gap: 0;
-}
-.page-list.meta-collapsed .meta-container { display: none; }
-
-/* Let the selected level use the entire center/right area when the info
-   sidebar is collapsed instead of keeping the normal 48rem content cap. */
-.page-list.meta-collapsed .level-container {
-    min-width: 0;
-}
-.page-list.meta-collapsed .level-container .level {
-    width: 100%;
-    max-width: none;
-    box-sizing: border-box;
-    padding-right: 1rem;
-}
-.page-list.meta-collapsed .level-container .level .video {
-    width: 100%;
-}
 
 
 /* Interactive records table */
@@ -341,9 +301,6 @@
 .page-list .record-expanded a { color: var(--color-primary); font-weight: 700; }
 
 @media (max-width: 900px) {
-    .page-list .meta-container { padding-right: 2.5rem; }
-    .page-list.meta-collapsed { grid-template-columns: minmax(0, 1fr); column-gap: 0; }
-    .page-list.meta-collapsed .level-container { padding-top: .4rem; }
     .page-list .filter-row { grid-template-columns: 1fr; }
     .page-list .level-heading { align-items: flex-start; flex-wrap: wrap; }
 }
