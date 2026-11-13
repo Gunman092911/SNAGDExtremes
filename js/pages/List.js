@@ -33,7 +33,7 @@ export default {
         <main v-else class="page-list" :class="{ 'meta-collapsed': metaCollapsed }">
             <div class="list-container">
                 <section class="list-tools" aria-label="Search and filter levels">
-                    <label class="level-search"><span class="sr-only">Search levels</span><span aria-hidden="true">⌕</span><input v-model.trim="searchQuery" type="search" placeholder="Search levels, creators, verifiers, publishers..." /><button v-if="searchQuery" type="button" @click="searchQuery = ''">×</button></label>
+                    <label class="level-search"><span aria-hidden="true">⌕</span><input v-model.trim="searchQuery" type="search" aria-label="Search by level name, creator, verifier, or publisher" placeholder="Search levels, creators, verifiers, publishers..." /><button v-if="searchQuery" type="button" @click="searchQuery = ''">×</button></label>
                     <div class="filter-row">
                         <select v-model="placementFilter" aria-label="Placement"><option value="all">All placements</option><option value="top75">Main · #1–75</option><option value="extended">Extended · #76–150</option><option value="legacy">Legacy · #151+</option></select>
                         <select v-model="categoryFilter" aria-label="List category"><option value="all">All categories</option><option value="aredl">AREDL ranked</option><option value="idl">IDL ranked</option><option value="unranked">Unranked on both</option></select>
@@ -98,16 +98,16 @@ export default {
                     <p v-else>This level does not accept new records.</p>
                     <table class="records interactive-records">
                         <thead><tr>
-                            <th><button type="button" @click="sortRecords('percent')">Progress / points ↕</button></th>
-                            <th><button type="button" @click="sortRecords('id')">Player ID ↕</button></th>
-                            <th><button type="button" @click="sortRecords('user')">Player ↕</button></th>
+                            <th><button type="button" @click="sortRecords('percent')">Progress / points {{ recordSortKey === 'percent' ? (recordSortDirection === 'asc' ? '↑' : '↓') : '↕' }}</button></th>
+                            <th><button type="button" @click="sortRecords('id')">Player ID {{ recordSortKey === 'id' ? (recordSortDirection === 'asc' ? '↑' : '↓') : '↕' }}</button></th>
+                            <th><button type="button" @click="sortRecords('user')">Player {{ recordSortKey === 'user' ? (recordSortDirection === 'asc' ? '↑' : '↓') : '↕' }}</button></th>
                             <th>Proof</th><th>Details</th>
                         </tr></thead>
                         <tbody>
                             <template v-for="record in sortedRecords" :key="recordKey(record)">
                                 <tr class="record">
                                     <td class="percent"><strong>{{ record.percent }}%</strong><small>{{ score(selected + 1, record.percent, level.percentToQualify) }} pts</small></td>
-                                    <td class="record-id">{{ record.playerId || record.player_id || record.accountId || record.account_id || record.id || '—' }}</td>
+                                    <td class="record-id">{{ record.playerId || record.player_id || record.accountId || record.account_id || '—' }}</td>
                                     <td class="user"><span class="player-avatar">{{ String(record.user || '?').slice(0, 1).toUpperCase() }}</span>
                                         <a v-if="record.profileUrl || record.profile_url || record.playerUrl || record.player_url" :href="record.profileUrl || record.profile_url || record.playerUrl || record.player_url" target="_blank" rel="noopener noreferrer" class="type-label-lg">{{ record.user }}</a>
                                         <span v-else class="type-label-lg">{{ record.user }}</span>
@@ -200,7 +200,7 @@ export default {
             const records = [...(this.level?.records || [])];
             const direction = this.recordSortDirection === 'asc' ? 1 : -1;
             return records.sort((a, b) => {
-                const get = record => this.recordSortKey === 'percent' ? Number(record.percent) : this.recordSortKey === 'id' ? Number(record.playerId || record.player_id || record.accountId || record.account_id || record.id || 0) : String(record.user || '').toLowerCase();
+                const get = record => this.recordSortKey === 'percent' ? Number(record.percent) : this.recordSortKey === 'id' ? Number(record.playerId || record.player_id || record.accountId || record.account_id || 0) : String(record.user || '').toLowerCase();
                 const av = get(a), bv = get(b);
                 return (typeof av === 'string' ? av.localeCompare(bv) : av - bv) * direction;
             });
