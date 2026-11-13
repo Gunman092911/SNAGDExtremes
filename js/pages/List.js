@@ -7,6 +7,15 @@ import { fetchEditors, fetchList } from "../content.js";
 import Spinner from "../components/Spinner.js";
 import LevelAuthors from "../components/List/LevelAuthors.js";
 
+const readStoredArray = key => {
+    try {
+        const value = JSON.parse(localStorage.getItem(key) || '[]');
+        return Array.isArray(value) ? value : [];
+    } catch {
+        return [];
+    }
+};
+
 const roleIconMap = {
     owner: "crown",
     admin: "user-gear",
@@ -59,7 +68,7 @@ export default {
             <div class="level-container" :style="levelBackgroundStyle">
                 <button v-if="metaCollapsed" type="button" class="meta-expand-toggle" @click="metaCollapsed = false">Show sidebar ›</button>
                 <div class="level-background-image" aria-hidden="true"></div>
-                <div class="level" v-if="level">
+                <div class="level" v-if="level" :key="level.path">
                     <div class="level-heading"><h1>{{ level.name }}</h1><button class="detail-favorite" type="button" :class="{ saved: favorites.includes(level.path) }" @click="toggleFavorite(level.path)">{{ favorites.includes(level.path) ? '★ Saved' : '☆ Favorite' }}</button></div>
                     <div v-if="level.aredlRank || level.idlRank" class="aredl-placement-badges">
                         <span v-if="level.aredlRank" class="aredl-rank-badge">AREDL #{{ level.aredlRank }}</span>
@@ -166,8 +175,8 @@ export default {
         compactMode: false,
         metaCollapsed: false,
         jumpRank: '',
-        favorites: JSON.parse(localStorage.getItem('snagd-favorites') || '[]'),
-        recentlyViewed: JSON.parse(localStorage.getItem('snagd-recent-levels') || '[]'),
+        favorites: readStoredArray('snagd-favorites'),
+        recentlyViewed: readStoredArray('snagd-recent-levels'),
         recordSortKey: 'percent',
         recordSortDirection: 'desc',
         expandedRecordKey: null,
