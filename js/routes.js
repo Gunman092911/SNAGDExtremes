@@ -1,4 +1,4 @@
-import List from './pages/List.js?v=remove-difficulty-20261111';
+import List from './pages/List.js?v=list-experience-redesign-20261112';
 import Leaderboard from './pages/Leaderboard.js?v=top-three-trophies-20261111';
 import Roulette from './pages/Roulette.js';
 import Submit from './pages/Submit.js';
