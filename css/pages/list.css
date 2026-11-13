@@ -254,14 +254,33 @@
 .page-list .no-level-results { padding: 1rem .5rem; color: var(--snagd-muted); font-size: .85rem; text-align: center; }
 .page-list .level-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .page-list .level-heading h1 { min-width: 0; overflow-wrap: anywhere; }
-.page-list .detail-favorite, .page-list .meta-collapse-toggle, .page-list .meta-expand-toggle {
+.page-list .detail-favorite {
     flex: none; border: 1px solid var(--snagd-accent-border); border-radius: .7rem;
     padding: .55rem .75rem; background: var(--snagd-accent-soft); color: var(--color-primary);
     font-size: .76rem; font-weight: 700; cursor: pointer;
 }
 .page-list .detail-favorite.saved { background: var(--snagd-accent-soft); color: #a18dff; }
-.page-list .meta-collapse-toggle { align-self: flex-end; margin-bottom: -.7rem; }
-.page-list .meta-expand-toggle { position: sticky; top: .7rem; z-index: 4; align-self: flex-end; margin: .5rem .8rem 0 auto; }
+
+/* Small edge-mounted arrow toggles the information sidebar. */
+.page-list .meta-container { position: relative; }
+.page-list .level-container { position: relative; min-width: 0; }
+.page-list .sidebar-edge-toggle {
+    position: absolute; z-index: 8; top: 50%; transform: translateY(-50%);
+    display: flex; align-items: center; justify-content: center;
+    width: 1.65rem; height: 3.2rem; padding: 0;
+    border: 1px solid var(--snagd-accent-border);
+    background: var(--snagd-panel); color: var(--color-primary);
+    box-shadow: var(--snagd-shadow); font-size: 1.25rem; font-weight: 800;
+    cursor: pointer; transition: background 150ms ease, width 150ms ease;
+}
+.page-list .sidebar-edge-toggle:hover { width: 1.95rem; background: var(--snagd-accent-soft); }
+.page-list .sidebar-edge-toggle.expanded {
+    left: -.85rem; border-radius: .65rem 0 0 .65rem; border-right: 0;
+}
+.page-list .sidebar-edge-toggle.collapsed {
+    right: 0; border-radius: .65rem 0 0 .65rem; border-right: 0;
+}
+
 .page-list .level-statistics {
     display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .65rem;
     margin-top: -.8rem;
