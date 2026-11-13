@@ -10,7 +10,7 @@ export default {
         <main v-if="loading">
             <Spinner></Spinner>
         </main>
-        <main v-else class="page-roulette">
+        <main v-else class="page-roulette" :class="{ &quot;sidebar-collapsed&quot;: sidebarCollapsed }">
             <div class="sidebar">
                 <p class="type-label-md" style="color: #aaa">
                     Shameless copy of the Extreme Demon Roulette by <a href="https://matcool.github.io/extreme-demon-roulette/" target="_blank">matcool</a>.
@@ -38,6 +38,7 @@ export default {
                 </form>
             </div>
             <section class="levels-container">
+                <button type="button" class="sidebar-edge-toggle" @click="sidebarCollapsed = !sidebarCollapsed" :aria-label="sidebarCollapsed ? &quot;Show roulette options&quot; : &quot;Hide roulette options&quot;" :title="sidebarCollapsed ? &quot;Show roulette options&quot; : &quot;Hide roulette options&quot;">{{ sidebarCollapsed ? &quot;‹&quot; : &quot;›&quot; }}</button>
                 <div class="levels">
                     <template v-if="levels.length > 0">
                         <!-- Completed Levels -->
@@ -100,6 +101,7 @@ export default {
         </main>
     `,
     data: () => ({
+        sidebarCollapsed: false,
         loading: false,
         levels: [],
         progression: [], // list of percentages completed
