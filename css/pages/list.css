@@ -329,6 +329,13 @@
 .page-list .record-expanded a { color: var(--color-primary); font-weight: 700; }
 
 @media (max-width: 900px) {
+    /* On stacked/mobile layouts, keep the sidebar arrow on the far right,
+       away from the text and clear of the left content gutter. */
+    .page-list .sidebar-edge-toggle.expanded {
+        left: auto; right: .25rem;
+        border-radius: .65rem 0 0 .65rem;
+        border-right: 0; border-left: 1px solid var(--snagd-accent-border);
+    }
     .page-list.meta-collapsed { grid-template-columns: minmax(0, 1fr); column-gap: 0; }
     .page-list.meta-collapsed .level-container { padding-top: .4rem; }
     .page-list .filter-row { grid-template-columns: 1fr; }
