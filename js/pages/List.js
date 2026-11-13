@@ -21,7 +21,7 @@ export default {
         <main v-if="loading">
             <Spinner></Spinner>
         </main>
-        <main v-else class="page-list">
+        <main v-else class="page-list" :class="{ 'meta-collapsed': metaCollapsed }">
             <div class="list-container">
                 <section class="list-tools" aria-label="Search and filter levels">
                     <label class="level-search"><span class="sr-only">Search levels</span><span aria-hidden="true">⌕</span><input v-model.trim="searchQuery" type="search" placeholder="Search levels, creators, verifiers, publishers..." /><button v-if="searchQuery" type="button" @click="searchQuery = ''">×</button></label>
@@ -57,6 +57,7 @@ export default {
                 <p v-if="list && visibleList.length === 0" class="no-level-results">No levels match your search or filters.</p>
             </div>
             <div class="level-container" :style="levelBackgroundStyle">
+                <button v-if="metaCollapsed" type="button" class="meta-expand-toggle" @click="metaCollapsed = false">Show sidebar ›</button>
                 <div class="level-background-image" aria-hidden="true"></div>
                 <div class="level" v-if="level">
                     <div class="level-heading"><h1>{{ level.name }}</h1><button class="detail-favorite" type="button" :class="{ saved: favorites.includes(level.path) }" @click="toggleFavorite(level.path)">{{ favorites.includes(level.path) ? '★ Saved' : '☆ Favorite' }}</button></div>
@@ -86,18 +87,32 @@ export default {
                     <p v-if="selected + 1 <= 75"><strong>{{ level.percentToQualify }}%</strong> or better to qualify</p>
                     <p v-else-if="selected +1 <= 150"><strong>100%</strong> or better to qualify</p>
                     <p v-else>This level does not accept new records.</p>
-                    <table class="records">
-                        <tr v-for="record in level.records" class="record">
-                            <td class="percent">
-                                <p>{{ record.percent }}%</p>
-                            </td>
-                            <td class="user">
-                                <a :href="record.link" target="_blank" class="type-label-lg">{{ record.user }}</a>
-                            </td>
-                            <td class="mobile">
-                                <img v-if="record.mobile" :src="\`./assets/phone-landscape\${store.dark ? '-dark' : ''}.svg\`" alt="Mobile">
-                            </td>
-                        </tr>
+                    <table class="records interactive-records">
+                        <thead><tr>
+                            <th><button type="button" @click="sortRecords('percent')">Progress / points ↕</button></th>
+                            <th><button type="button" @click="sortRecords('id')">Player ID ↕</button></th>
+                            <th><button type="button" @click="sortRecords('user')">Player ↕</button></th>
+                            <th>Proof</th><th>Details</th>
+                        </tr></thead>
+                        <tbody>
+                            <template v-for="record in sortedRecords" :key="recordKey(record)">
+                                <tr class="record">
+                                    <td class="percent"><strong>{{ record.percent }}%</strong><small>{{ score(selected + 1, record.percent, level.percentToQualify) }} pts</small></td>
+                                    <td class="record-id">{{ record.playerId || record.player_id || record.accountId || record.account_id || record.id || '—' }}</td>
+                                    <td class="user"><span class="player-avatar">{{ String(record.user || '?').slice(0, 1).toUpperCase() }}</span>
+                                        <a v-if="record.profileUrl || record.profile_url || record.playerUrl || record.player_url" :href="record.profileUrl || record.profile_url || record.playerUrl || record.player_url" target="_blank" rel="noopener noreferrer" class="type-label-lg">{{ record.user }}</a>
+                                        <span v-else class="type-label-lg">{{ record.user }}</span>
+                                    </td>
+                                    <td><a v-if="record.link" :href="record.link" target="_blank" rel="noopener noreferrer">Watch ↗</a><span v-else>—</span></td>
+                                    <td><button type="button" class="record-expand" @click="toggleRecordDetails(record)" :aria-expanded="expandedRecordKey === recordKey(record)">{{ expandedRecordKey === recordKey(record) ? 'Hide' : 'View' }}</button></td>
+                                </tr>
+                                <tr v-if="expandedRecordKey === recordKey(record)" class="record-expanded"><td colspan="5">
+                                    <span v-if="record.hz">FPS: {{ record.hz }}</span><span v-if="record.mobile">Mobile player</span>
+                                    <span v-if="record.device">Device: {{ record.device }}</span>
+                                    <span v-if="!record.hz && !record.mobile && !record.device">No additional record details.</span>
+                                </td></tr>
+                            </template>
+                        </tbody>
                     </table>
                 </div>
                 <div v-else class="level" style="height: 100%; justify-content: center; align-items: center;">
@@ -153,6 +168,9 @@ export default {
         jumpRank: '',
         favorites: JSON.parse(localStorage.getItem('snagd-favorites') || '[]'),
         recentlyViewed: JSON.parse(localStorage.getItem('snagd-recent-levels') || '[]'),
+        recordSortKey: 'percent',
+        recordSortDirection: 'desc',
+        expandedRecordKey: null,
         errors: [],
         removedRecordsChannel: null,
         aredlRefreshInterval: null,
@@ -163,6 +181,15 @@ export default {
     computed: {
         level() {
             return this.list[this.selected]?.[0] || null;
+        },
+        sortedRecords() {
+            const records = [...(this.level?.records || [])];
+            const direction = this.recordSortDirection === 'asc' ? 1 : -1;
+            return records.sort((a, b) => {
+                const get = record => this.recordSortKey === 'percent' ? Number(record.percent) : this.recordSortKey === 'id' ? Number(record.playerId || record.player_id || record.accountId || record.account_id || record.id || 0) : String(record.user || '').toLowerCase();
+                const av = get(a), bv = get(b);
+                return (typeof av === 'string' ? av.localeCompare(bv) : av - bv) * direction;
+            });
         },
         visibleList() {
             const query = this.searchQuery.toLowerCase();
@@ -385,6 +412,17 @@ export default {
         formatUpdated(value) {
             const date = new Date(value);
             return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
+        },
+        recordKey(record) {
+            return JSON.stringify([record.user || '', record.link || '', record.percent || 0, record.hz || 0]);
+        },
+        toggleRecordDetails(record) {
+            const key = this.recordKey(record);
+            this.expandedRecordKey = this.expandedRecordKey === key ? null : key;
+        },
+        sortRecords(key) {
+            if (this.recordSortKey === key) this.recordSortDirection = this.recordSortDirection === 'asc' ? 'desc' : 'asc';
+            else { this.recordSortKey = key; this.recordSortDirection = key === 'user' ? 'asc' : 'desc'; }
         },
         youtubeThumbnail(url) {
             if (!url) return '';
