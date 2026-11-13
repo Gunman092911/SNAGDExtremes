@@ -300,6 +300,22 @@
 }
 .page-list.meta-collapsed .meta-container { display: none; }
 
+/* Let the selected level use the entire center/right area when the info
+   sidebar is collapsed instead of keeping the normal 48rem content cap. */
+.page-list.meta-collapsed .level-container {
+    min-width: 0;
+}
+.page-list.meta-collapsed .level-container .level {
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
+    padding-right: 1rem;
+}
+.page-list.meta-collapsed .level-container .level .video {
+    width: 100%;
+}
+
+
 /* Interactive records table */
 .page-list .interactive-records { width: 100%; border-collapse: separate; border-spacing: 0 .35rem; table-layout: auto; }
 .page-list .interactive-records thead th { padding: .45rem .55rem; color: var(--snagd-muted); font-size: .7rem; text-align: left; white-space: nowrap; }
