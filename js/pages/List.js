@@ -30,7 +30,7 @@ export default {
         <main v-if="loading">
             <Spinner></Spinner>
         </main>
-        <main v-else class="page-list" :class="{ 'meta-collapsed': metaCollapsed }">
+        <main v-else class="page-list">
             <div class="list-container">
                 <section class="list-tools" aria-label="Search and filter levels">
                     <label class="level-search"><span aria-hidden="true">⌕</span><input v-model.trim="searchQuery" type="search" aria-label="Search by level name, creator, verifier, or publisher" placeholder="Search levels, creators, verifiers, publishers..." /><button v-if="searchQuery" type="button" @click="searchQuery = ''">×</button></label>
@@ -66,7 +66,6 @@ export default {
                 <p v-if="list && visibleList.length === 0" class="no-level-results">No levels match your search or filters.</p>
             </div>
             <div class="level-container" :style="levelBackgroundStyle">
-                <button v-if="metaCollapsed" type="button" class="sidebar-edge-toggle collapsed" @click="metaCollapsed = false" aria-label="Expand sidebar" title="Expand sidebar">‹</button>
                 <div class="level-background-image" aria-hidden="true"></div>
                 <div class="level" v-if="level" :key="level.path">
                     <div class="level-heading"><h1>{{ level.name }}</h1><button class="detail-favorite" type="button" :class="{ saved: favorites.includes(level.path) }" @click="toggleFavorite(level.path)">{{ favorites.includes(level.path) ? '★ Saved' : '☆ Favorite' }}</button></div>
@@ -130,7 +129,6 @@ export default {
             </div>
             <div class="meta-container">
                 <div class="meta">
-                    <button type="button" class="sidebar-edge-toggle expanded" @click="metaCollapsed = true" aria-label="Collapse sidebar" title="Collapse sidebar">›</button>
                     <div class="errors" v-show="errors.length > 0">
                         <p class="error" v-for="error of errors">{{ error }}</p>
                     </div>
@@ -173,7 +171,6 @@ export default {
         difficultyFilter: 'all',
         quickFilter: 'all',
         compactMode: false,
-        metaCollapsed: false,
         jumpRank: '',
         favorites: readStoredArray('snagd-favorites'),
         recentlyViewed: readStoredArray('snagd-recent-levels'),
