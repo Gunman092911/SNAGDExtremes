@@ -187,6 +187,11 @@ export default {
         roleIconMap,
         store
     }),
+    watch: {
+        visibleList(items) {
+            if (items.length && !items.some(item => item.index === this.selected)) this.setSelected(items[0].index);
+        },
+    },
     computed: {
         level() {
             return this.list[this.selected]?.[0] || null;
