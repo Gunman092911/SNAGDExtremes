@@ -7,6 +7,15 @@ import { fetchEditors, fetchList } from "../content.js";
 import Spinner from "../components/Spinner.js";
 import LevelAuthors from "../components/List/LevelAuthors.js";
 
+const readStoredArray = key => {
+    try {
+        const value = JSON.parse(localStorage.getItem(key) || '[]');
+        return Array.isArray(value) ? value : [];
+    } catch {
+        return [];
+    }
+};
+
 const roleIconMap = {
     owner: "crown",
     admin: "user-gear",
@@ -21,28 +30,46 @@ export default {
         <main v-if="loading">
             <Spinner></Spinner>
         </main>
-        <main v-else class="page-list">
+        <main v-else class="page-list" :class="{ 'meta-collapsed': metaCollapsed }">
             <div class="list-container">
-                <table class="list" v-if="list">
-                    <tr v-for="([level, err], i) in list">
+                <section class="list-tools" aria-label="Search and filter levels">
+                    <label class="level-search"><span aria-hidden="true">⌕</span><input v-model.trim="searchQuery" type="search" aria-label="Search by level name, creator, verifier, or publisher" placeholder="Search levels, creators, verifiers, publishers..." /><button v-if="searchQuery" type="button" @click="searchQuery = ''">×</button></label>
+                    <div class="filter-row">
+                        <select v-model="placementFilter" aria-label="Placement"><option value="all">All placements</option><option value="top75">Main · #1–75</option><option value="extended">Extended · #76–150</option><option value="legacy">Legacy · #151+</option></select>
+                        <select v-model="categoryFilter" aria-label="List category"><option value="all">All categories</option><option value="aredl">AREDL ranked</option><option value="idl">IDL ranked</option><option value="unranked">Unranked on both</option></select>
+                        <select v-model="difficultyFilter" aria-label="Difficulty"><option value="all">All difficulties</option><option value="extreme">Extreme Demon</option><option value="other">Other / unspecified</option></select>
+                    </div>
+                    <div class="list-tool-actions">
+                        <button type="button" :class="{ active: quickFilter === 'favorites' }" @click="quickFilter = quickFilter === 'favorites' ? 'all' : 'favorites'">☆ Favorites</button>
+                        <button type="button" :class="{ active: quickFilter === 'recent' }" @click="quickFilter = quickFilter === 'recent' ? 'all' : 'recent'">Recently viewed</button>
+                        <button type="button" @click="chooseRandomLevel">↝ Random</button>
+                        <button type="button" :class="{ active: compactMode }" @click="compactMode = !compactMode">Compact</button>
+                    </div>
+                    <div class="jump-row"><label for="jump-to-rank">Jump to rank</label><input id="jump-to-rank" v-model.number="jumpRank" type="number" min="1" :max="list.length" placeholder="#" @keyup.enter="jumpToRank" /><button type="button" @click="jumpToRank">Go</button><span>{{ visibleList.length }} / {{ list.length }}</span></div>
+                </section>
+                <table class="list" :class="{ 'compact-list': compactMode }" v-if="list">
+                    <tr v-for="item in visibleList" :key="item.level?.path || item.index">
                         <td class="rank">
-                            <p v-if="i + 1 <= 150" class="type-label-lg">#{{ i + 1 }}</p>
+                            <p v-if="item.index + 1 <= 150" class="type-label-lg">#{{ item.index + 1 }}</p>
                             <p v-else class="type-label-lg">Legacy</p>
                         </td>
-                        <td class="level" :class="{ 'active': selected == i, 'error': !level }">
-                            <button @click="selected = i">
-                                <span class="type-label-lg">{{ level?.name || \`Error (\${err}.json)\` }}</span>
-                                <small v-if="level?.aredlRank" class="aredl-rank-badge">AREDL #{{ level.aredlRank }}</small>
-                            <small v-if="level?.idlRank" class="idl-rank-badge">IDL {{ level.idlTier }} #{{ level.idlRank }}</small>
+                        <td class="level" :class="{ 'active': selected == item.index, 'error': !item.level }">
+                            <button @click="setSelected(item.index)">
+                                <span class="type-label-lg">{{ item.level?.name || 'Unable to load level' }}</span>
+                                <small v-if="item.level?.aredlRank" class="aredl-rank-badge">AREDL #{{ item.level.aredlRank }}</small>
+                                <small v-if="item.level?.idlRank" class="idl-rank-badge">IDL {{ item.level.idlTier }} #{{ item.level.idlRank }}</small>
                             </button>
+                            <button v-if="item.level" class="favorite-toggle" type="button" :class="{ saved: favorites.includes(item.level.path) }" @click.stop="toggleFavorite(item.level.path)" :aria-label="favorites.includes(item.level.path) ? 'Remove favorite' : 'Add favorite'">{{ favorites.includes(item.level.path) ? '★' : '☆' }}</button>
                         </td>
                     </tr>
                 </table>
+                <p v-if="list && visibleList.length === 0" class="no-level-results">No levels match your search or filters.</p>
             </div>
             <div class="level-container" :style="levelBackgroundStyle">
+                <button v-if="metaCollapsed" type="button" class="meta-expand-toggle" @click="metaCollapsed = false">Show sidebar ›</button>
                 <div class="level-background-image" aria-hidden="true"></div>
-                <div class="level" v-if="level">
-                    <h1>{{ level.name }}</h1>
+                <div class="level" v-if="level" :key="level.path">
+                    <div class="level-heading"><h1>{{ level.name }}</h1><button class="detail-favorite" type="button" :class="{ saved: favorites.includes(level.path) }" @click="toggleFavorite(level.path)">{{ favorites.includes(level.path) ? '★ Saved' : '☆ Favorite' }}</button></div>
                     <div v-if="level.aredlRank || level.idlRank" class="aredl-placement-badges">
                         <span v-if="level.aredlRank" class="aredl-rank-badge">AREDL #{{ level.aredlRank }}</span>
                         <span v-if="level.idlRank" class="idl-rank-badge">IDL {{ level.idlTier }} #{{ level.idlRank }}</span>
@@ -63,22 +90,38 @@ export default {
                             <p>{{ level.password || 'Free to Copy' }}</p>
                         </li>
                     </ul>
+                    <section class="level-statistics"><div><strong>{{ level.records?.length || 0 }}</strong><span>Total records</span></div><div><strong>{{ level.records?.filter(record => Number(record.percent) === 100).length || 0 }}</strong><span>Victors</span></div><div><strong>{{ level.records?.filter(record => Number(record.percent) < 100).length || 0 }}</strong><span>Progress</span></div></section>
+                    <p v-if="level.updatedAt || level.updated_at || level.lastUpdated" class="level-updated">Information updated {{ formatUpdated(level.updatedAt || level.updated_at || level.lastUpdated) }}</p>
                     <h2>Records</h2>
                     <p v-if="selected + 1 <= 75"><strong>{{ level.percentToQualify }}%</strong> or better to qualify</p>
                     <p v-else-if="selected +1 <= 150"><strong>100%</strong> or better to qualify</p>
                     <p v-else>This level does not accept new records.</p>
-                    <table class="records">
-                        <tr v-for="record in level.records" class="record">
-                            <td class="percent">
-                                <p>{{ record.percent }}%</p>
-                            </td>
-                            <td class="user">
-                                <a :href="record.link" target="_blank" class="type-label-lg">{{ record.user }}</a>
-                            </td>
-                            <td class="mobile">
-                                <img v-if="record.mobile" :src="\`./assets/phone-landscape\${store.dark ? '-dark' : ''}.svg\`" alt="Mobile">
-                            </td>
-                        </tr>
+                    <table class="records interactive-records">
+                        <thead><tr>
+                            <th><button type="button" @click="sortRecords('percent')">Progress / points {{ recordSortKey === 'percent' ? (recordSortDirection === 'asc' ? '↑' : '↓') : '↕' }}</button></th>
+                            <th><button type="button" @click="sortRecords('id')">Player ID {{ recordSortKey === 'id' ? (recordSortDirection === 'asc' ? '↑' : '↓') : '↕' }}</button></th>
+                            <th><button type="button" @click="sortRecords('user')">Player {{ recordSortKey === 'user' ? (recordSortDirection === 'asc' ? '↑' : '↓') : '↕' }}</button></th>
+                            <th>Proof</th><th>Details</th>
+                        </tr></thead>
+                        <tbody>
+                            <template v-for="record in sortedRecords" :key="recordKey(record)">
+                                <tr class="record">
+                                    <td class="percent"><strong>{{ record.percent }}%</strong><small>{{ score(selected + 1, record.percent, level.percentToQualify) }} pts</small></td>
+                                    <td class="record-id">{{ record.playerId || record.player_id || record.accountId || record.account_id || '—' }}</td>
+                                    <td class="user"><span class="player-avatar">{{ String(record.user || '?').slice(0, 1).toUpperCase() }}</span>
+                                        <a v-if="record.profileUrl || record.profile_url || record.playerUrl || record.player_url" :href="record.profileUrl || record.profile_url || record.playerUrl || record.player_url" target="_blank" rel="noopener noreferrer" class="type-label-lg">{{ record.user }}</a>
+                                        <span v-else class="type-label-lg">{{ record.user }}</span>
+                                    </td>
+                                    <td><a v-if="record.link" :href="record.link" target="_blank" rel="noopener noreferrer">Watch ↗</a><span v-else>—</span></td>
+                                    <td><button type="button" class="record-expand" @click="toggleRecordDetails(record)" :aria-expanded="expandedRecordKey === recordKey(record)">{{ expandedRecordKey === recordKey(record) ? 'Hide' : 'View' }}</button></td>
+                                </tr>
+                                <tr v-if="expandedRecordKey === recordKey(record)" class="record-expanded"><td colspan="5">
+                                    <span v-if="record.hz">FPS: {{ record.hz }}</span><span v-if="record.mobile">Mobile player</span>
+                                    <span v-if="record.device">Device: {{ record.device }}</span>
+                                    <span v-if="!record.hz && !record.mobile && !record.device">No additional record details.</span>
+                                </td></tr>
+                            </template>
+                        </tbody>
                     </table>
                 </div>
                 <div v-else class="level" style="height: 100%; justify-content: center; align-items: center;">
@@ -87,6 +130,7 @@ export default {
             </div>
             <div class="meta-container">
                 <div class="meta">
+                    <button type="button" class="meta-collapse-toggle" @click="metaCollapsed = true">Collapse sidebar ‹</button>
                     <div class="errors" v-show="errors.length > 0">
                         <p class="error" v-for="error of errors">{{ error }}</p>
                     </div>
@@ -123,6 +167,19 @@ export default {
         editors: [],
         loading: true,
         selected: 0,
+        searchQuery: '',
+        placementFilter: 'all',
+        categoryFilter: 'all',
+        difficultyFilter: 'all',
+        quickFilter: 'all',
+        compactMode: false,
+        metaCollapsed: false,
+        jumpRank: '',
+        favorites: readStoredArray('snagd-favorites'),
+        recentlyViewed: readStoredArray('snagd-recent-levels'),
+        recordSortKey: 'percent',
+        recordSortDirection: 'desc',
+        expandedRecordKey: null,
         errors: [],
         removedRecordsChannel: null,
         aredlRefreshInterval: null,
@@ -130,9 +187,44 @@ export default {
         roleIconMap,
         store
     }),
+    watch: {
+        visibleList(items) {
+            if (items.length && !items.some(item => item.index === this.selected)) this.setSelected(items[0].index);
+        },
+    },
     computed: {
         level() {
-            return this.list[this.selected][0];
+            return this.list[this.selected]?.[0] || null;
+        },
+        sortedRecords() {
+            const records = [...(this.level?.records || [])];
+            const direction = this.recordSortDirection === 'asc' ? 1 : -1;
+            return records.sort((a, b) => {
+                const get = record => this.recordSortKey === 'percent' ? Number(record.percent) : this.recordSortKey === 'id' ? Number(record.playerId || record.player_id || record.accountId || record.account_id || 0) : String(record.user || '').toLowerCase();
+                const av = get(a), bv = get(b);
+                return (typeof av === 'string' ? av.localeCompare(bv) : av - bv) * direction;
+            });
+        },
+        visibleList() {
+            const query = this.searchQuery.toLowerCase();
+            return this.list.map(([level, err], index) => ({ level, err, index })).filter(item => {
+                const level = item.level;
+                if (!level) return false;
+                const searchable = [level.name, level.author, ...(level.creators || []), level.verifier, level.publisher].join(' ').toLowerCase();
+                if (query && !searchable.includes(query)) return false;
+                if (this.placementFilter === 'top75' && item.index + 1 > 75) return false;
+                if (this.placementFilter === 'extended' && (item.index + 1 < 76 || item.index + 1 > 150)) return false;
+                if (this.placementFilter === 'legacy' && item.index + 1 <= 150) return false;
+                if (this.categoryFilter === 'aredl' && !level.aredlRank) return false;
+                if (this.categoryFilter === 'idl' && !level.idlRank) return false;
+                if (this.categoryFilter === 'unranked' && (level.aredlRank || level.idlRank)) return false;
+                const difficulty = String(level.difficulty || level.demonDifficulty || '').toLowerCase();
+                if (this.difficultyFilter === 'extreme' && difficulty && !difficulty.includes('extreme')) return false;
+                if (this.difficultyFilter === 'other' && (!difficulty || difficulty.includes('extreme'))) return false;
+                if (this.quickFilter === 'favorites' && !this.favorites.includes(level.path)) return false;
+                if (this.quickFilter === 'recent' && !this.recentlyViewed.includes(level.path)) return false;
+                return true;
+            });
         },
         levelBackgroundStyle() {
             const url = this.level?.background_image || this.youtubeThumbnail(this.level?.verification);
@@ -174,6 +266,7 @@ export default {
         }
 
         this.loading = false;
+        if (this.level?.path) this.setSelected(this.selected);
 
         // Refresh AREDL placements on load and every 15 minutes.
         await Promise.all([this.refreshAredlRanks(), this.refreshIdlRanks()]);
@@ -308,6 +401,42 @@ export default {
             } catch (error) {
                 console.warn('Could not refresh IDL placements:', error);
             }
+        },
+        setSelected(index) {
+            if (!this.list[index]?.[0]) return;
+            this.selected = index;
+            const path = this.list[index][0].path;
+            this.recentlyViewed = [path, ...this.recentlyViewed.filter(item => item !== path)].slice(0, 8);
+            localStorage.setItem('snagd-recent-levels', JSON.stringify(this.recentlyViewed));
+        },
+        toggleFavorite(path) {
+            this.favorites = this.favorites.includes(path) ? this.favorites.filter(item => item !== path) : [...this.favorites, path];
+            localStorage.setItem('snagd-favorites', JSON.stringify(this.favorites));
+        },
+        chooseRandomLevel() {
+            const choices = this.visibleList.filter(item => item.level);
+            if (choices.length) this.setSelected(choices[Math.floor(Math.random() * choices.length)].index);
+        },
+        jumpToRank() {
+            const rank = Number(this.jumpRank);
+            if (!Number.isInteger(rank) || rank < 1 || rank > this.list.length) return;
+            this.setSelected(rank - 1);
+            this.searchQuery = ''; this.placementFilter = 'all'; this.categoryFilter = 'all'; this.quickFilter = 'all';
+        },
+        formatUpdated(value) {
+            const date = new Date(value);
+            return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
+        },
+        recordKey(record) {
+            return JSON.stringify([record.user || '', record.link || '', record.percent || 0, record.hz || 0]);
+        },
+        toggleRecordDetails(record) {
+            const key = this.recordKey(record);
+            this.expandedRecordKey = this.expandedRecordKey === key ? null : key;
+        },
+        sortRecords(key) {
+            if (this.recordSortKey === key) this.recordSortDirection = this.recordSortDirection === 'asc' ? 'desc' : 'asc';
+            else { this.recordSortKey = key; this.recordSortDirection = key === 'user' ? 'asc' : 'desc'; }
         },
         youtubeThumbnail(url) {
             if (!url) return '';
