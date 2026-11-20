@@ -91,6 +91,18 @@ export default {
                     </ul>
                     <section class="level-statistics"><div><strong>{{ level.records?.length || 0 }}</strong><span>Total records</span></div><div><strong>{{ level.records?.filter(record => Number(record.percent) === 100).length || 0 }}</strong><span>Victors</span></div><div><strong>{{ level.records?.filter(record => Number(record.percent) < 100).length || 0 }}</strong><span>Progress</span></div></section>
                     <p v-if="level.updatedAt || level.updated_at || level.lastUpdated" class="level-updated">Information updated {{ formatUpdated(level.updatedAt || level.updated_at || level.lastUpdated) }}</p>
+                    <section class="placement-history">
+                        <div class="placement-history-heading"><h2>Placement History</h2><span>{{ placementHistory.length }} events</span></div>
+                        <p v-if="placementHistoryLoading" class="placement-history-empty">Loading placement history...</p>
+                        <p v-else-if="!placementHistory.length" class="placement-history-empty">No placement history has been recorded for this level yet.</p>
+                        <ol v-else class="placement-history-list">
+                            <li v-for="event in placementHistory" :key="event.id" class="placement-history-item">
+                                <div class="placement-history-topline"><strong>{{ formatHistoryDate(event.changed_at) }}</strong><span class="placement-history-position">{{ historyPosition(event) }}</span></div>
+                                <p>{{ historyTitle(event) }}</p>
+                                <small v-if="event.reason">{{ event.reason }}</small>
+                            </li>
+                        </ol>
+                    </section>
                     <h2>Records</h2>
                     <p v-if="selected + 1 <= 75"><strong>{{ level.percentToQualify }}%</strong> or better to qualify</p>
                     <p v-else-if="selected +1 <= 150"><strong>100%</strong> or better to qualify</p>
@@ -177,6 +189,9 @@ export default {
         recordSortKey: 'percent',
         recordSortDirection: 'desc',
         expandedRecordKey: null,
+        placementHistory: [],
+        placementHistoryLoading: false,
+        placementHistoryPath: '',
         errors: [],
         removedRecordsChannel: null,
         aredlRefreshInterval: null,
@@ -403,6 +418,7 @@ export default {
             if (!this.list[index]?.[0]) return;
             this.selected = index;
             const path = this.list[index][0].path;
+            if (path !== this.placementHistoryPath) this.loadPlacementHistory(path);
             this.recentlyViewed = [path, ...this.recentlyViewed.filter(item => item !== path)].slice(0, 8);
             localStorage.setItem('snagd-recent-levels', JSON.stringify(this.recentlyViewed));
         },
@@ -419,6 +435,39 @@ export default {
             if (!Number.isInteger(rank) || rank < 1 || rank > this.list.length) return;
             this.setSelected(rank - 1);
             this.searchQuery = ''; this.placementFilter = 'all'; this.categoryFilter = 'all'; this.quickFilter = 'all';
+        },
+        async loadPlacementHistory(levelPath) {
+            this.placementHistoryPath = levelPath;
+            this.placementHistory = [];
+            this.placementHistoryLoading = true;
+            try {
+                const { data, error } = await supabase
+                    .from('snagd_placement_history')
+                    .select('id, level_name, event_type, previous_rank, new_rank, reason, changed_at')
+                    .eq('level_key', levelPath)
+                    .order('changed_at', { ascending: false });
+                if (error) throw error;
+                if (this.placementHistoryPath === levelPath) this.placementHistory = data || [];
+            } catch (error) {
+                console.warn('Could not load placement history:', error.message);
+            } finally {
+                if (this.placementHistoryPath === levelPath) this.placementHistoryLoading = false;
+            }
+        },
+        historyTitle(event) {
+            if (event.event_type === 'added') return 'First placement on the list';
+            if (event.event_type === 'removed') return 'Removed from the list';
+            if (event.previous_rank == null) return 'Added to the list';
+            return 'Placement changed';
+        },
+        historyPosition(event) {
+            if (event.event_type === 'removed') return event.previous_rank ? 'Was #' + event.previous_rank : 'Removed';
+            if (event.previous_rank == null) return event.new_rank ? 'Placed #' + event.new_rank : 'Added';
+            return '#' + event.previous_rank + ' → #' + event.new_rank;
+        },
+        formatHistoryDate(value) {
+            const date = new Date(value);
+            return Number.isNaN(date.getTime()) ? value : date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
         },
         formatUpdated(value) {
             const date = new Date(value);
