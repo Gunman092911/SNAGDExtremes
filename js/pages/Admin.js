@@ -31,6 +31,7 @@ export default {
                     <section class="admin-section">
                         <h2>Manage Public List ({{ orderedLevels.length }} levels)</h2>
                         <p class="submission-intro">Drag levels to reorder them. Use the settings cog beside a level to edit its details, manage records, or remove it.</p>
+                        <label class="placement-reason-field">Placement change explanation<input v-model.trim="placementReasonDraft" maxlength="300" placeholder="Optional: explain why the list changed"></label>
                         <button class="btn" @click="saveOrder" :disabled="busy || !orderedLevels.length">Save List Order</button>
                         <transition-group name="level-sort" tag="div" class="level-sort-list">
                             <article v-for="(level, index) in orderedLevels" :key="level.path" class="submission-card admin-level-card"
@@ -131,7 +132,7 @@ export default {
     `,
     data: () => ({
         email: '', password: '', user: null, submissions: [], levelRequests: [], levels: [], orderedLevels: [],
-        originalOrder: [], movedLevelPaths: [],
+        originalOrder: [], movedLevelPaths: [], placementReasonDraft: '',
         dragIndex: null, dragOverIndex: null,
         recordDragIndex: null, recordDragOverIndex: null, recordOrderDirty: false,
         selectedRecordLevel: '',
@@ -375,6 +376,29 @@ export default {
                     })
                     .filter(Boolean);
 
+                let historyMessage = '';
+                const historyEvents = this.orderedLevels.flatMap((level, index) => {
+                    const oldIndex = previousPositions.get(level.path);
+                    const newRank = index + 1;
+                    if (oldIndex === index) return [];
+                    return [{
+                        level_key: level.path,
+                        level_name: level.name,
+                        event_type: oldIndex === undefined ? 'added' : 'repositioned',
+                        previous_rank: oldIndex === undefined ? null : oldIndex + 1,
+                        new_rank: newRank,
+                        reason: this.placementReasonDraft || (oldIndex === undefined ? 'Added to the public list.' : 'List order updated by staff.'),
+                        changed_by: this.user.id,
+                    }];
+                });
+                if (historyEvents.length) {
+                    const { error: historyError } = await supabase.from('snagd_placement_history').insert(historyEvents);
+                    if (historyError) {
+                        console.warn('List order saved, but placement history could not be recorded:', historyError);
+                        historyMessage = ' Placement history was not saved; run the placement-history SQL setup in Supabase.';
+                    }
+                }
+
                 let announcementMessage = '';
                 if (movedLevels.length) {
                     const results = await Promise.all(movedLevels.map(activity => this.announceActivity(activity)));
@@ -386,7 +410,8 @@ export default {
 
                 this.originalOrder = this.orderedLevels.map(level => level.path);
                 this.movedLevelPaths = [];
-                this.message = 'The public list order has been saved.' + announcementMessage;
+                this.placementReasonDraft = '';
+                this.message = 'The public list order has been saved.' + historyMessage + announcementMessage;
                 this.orderedLevels.forEach(level => { level.moveTo = null; });
             } catch (error) {
                 this.error = error.message || 'Could not save the list order. Check that the list-order SQL setup has been run.';
@@ -552,6 +577,7 @@ export default {
                 level.publisher = publisher;
                 level.verifier = verifier;
                 level.verification = verification;
+                const previousRank = this.orderedLevels.findIndex(item => item.path === level.path) + 1;
                 const customLevel = this.levels.find(item => item.level_key === level.path);
                 if (customLevel) {
                     customLevel.name = name;
@@ -717,7 +743,22 @@ export default {
                     if (error.code === '23505') throw new Error('A level with that generated ID or name already exists.');
                     throw error;
                 }
-                this.message = this.newLevel.name + ' was added. It is now available for record submissions and appears at the bottom of the list.';
+                const addedRank = this.orderedLevels.length + 1;
+                let historyNote = '';
+                const { error: historyError } = await supabase.from('snagd_placement_history').insert({
+                    level_key: levelKey,
+                    level_name: this.newLevel.name,
+                    event_type: 'added',
+                    previous_rank: null,
+                    new_rank: addedRank,
+                    reason: 'Added to the public list.',
+                    changed_by: this.user.id,
+                });
+                if (historyError) {
+                    console.warn('Level added, but its placement history could not be recorded:', historyError);
+                    historyNote = ' Placement history will work after the placement-history SQL setup is installed.';
+                }
+                this.message = this.newLevel.name + ' was added. It is now available for record submissions and appears at the bottom of the list.' + historyNote;
                 this.newLevel = { name: '', id: '', verifier: '', verification: '', percentToQualify: 100 };
                 await this.loadLevels();
             } catch (error) {
@@ -741,6 +782,16 @@ export default {
                     }, { onConflict: 'level_key' });
                     if (error) throw error;
                 }
+                const { error: historyError } = await supabase.from('snagd_placement_history').insert({
+                    level_key: level.path,
+                    level_name: level.name,
+                    event_type: 'removed',
+                    previous_rank: previousRank > 0 ? previousRank : null,
+                    new_rank: null,
+                    reason: 'Removed from the public list.',
+                    changed_by: this.user.id,
+                });
+                if (historyError) console.warn('Level removed, but placement history could not be recorded:', historyError);
                 this.orderedLevels = this.orderedLevels.filter(item => item.path !== level.path);
                 this.originalOrder = this.orderedLevels.map(item => item.path);
                 this.movedLevelPaths = [];
