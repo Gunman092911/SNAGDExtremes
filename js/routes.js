@@ -1,8 +1,8 @@
-import List from './pages/List.js?v=list-experience-redesign-20261112';
+import List from './pages/List.js?v=placement-history-20261120';
 import Leaderboard from './pages/Leaderboard.js?v=top-three-trophies-20261111';
 import Roulette from './pages/Roulette.js';
 import Submit from './pages/Submit.js';
-import Admin from './pages/Admin.js';
+import Admin from './pages/Admin.js?v=placement-history-20261120';
 import ResetPassword from './pages/ResetPassword.js';
 
 export default [
