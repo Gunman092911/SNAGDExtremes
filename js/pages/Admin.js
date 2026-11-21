@@ -769,6 +769,8 @@ export default {
             if (!window.confirm('Remove "' + level.name + '" from the public list? This also removes it from the submission dropdown.')) return;
             this.error = ''; this.message = ''; this.busy = true;
             try {
+                // Capture the level's current position before removing it from the list.
+                const previousRank = this.orderedLevels.findIndex(item => item.path === level.path) + 1;
                 const customLevel = this.levels.find(item => item.level_key === level.path);
                 if (customLevel) {
                     const { error } = await supabase.from('snagd_levels').delete().eq('level_key', level.path);
